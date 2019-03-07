@@ -11,12 +11,17 @@ package requirements are:
 
 * `pandas` _(preinstalled)_
 * `boto3` _(preinstalled)_
+* `numpy` _(preinstalled)_
+* `s3fs`
+* `gluejobutils`
 
 Example:
+
 ```python
 import pydbtools as pydb
+import pandas as pd
 
-response = pydb.get_athena_query_response("SELECT * from crest_v1.flatfile limit 10000", out_path = "s3://my-bucket/__temp__")
+response = pydb.get_athena_query_response("SELECT * from database.table limit 10000")
 
 # print out path to athena query output (as a csv)
 print(response['s3_path'])
@@ -24,15 +29,15 @@ print(response['s3_path'])
 # print out meta data
 print(response['meta_data'])
 
-# Read in data using whatever csv reader you want
-s3_path_stripped = gsub("s3://", "", response$s3_path)
-df <- s3tools::read_using(FUN = readr::read_csv, s3_path=s3_path_stripped)
+# Read in data using pandas (read everything as a string)
+df = pd.read_csv(response['s3_path'].replace('s3://', 's3a://'), dtype = object)
+df.head()
 
 ```
 
 #### Meta data
 
-The output from dbtools::get_athena_query_response(...) is a list one of it's keys is `meta`. The meta key is a list where each element in this list is the name (`name`) and data type (`type`) for each column in your athena query output. For example for this table output:
+The output from get_athena_query_response(...) is a dictionary one of it's keys is `meta`. The meta key is a list where each element in this list is the name (`name`) and data type (`type`) for each column in your athena query output. For example for this table output:
 
 |col1|col2|
 |---|---|
@@ -42,21 +47,33 @@ The output from dbtools::get_athena_query_response(...) is a list one of it's ke
 
 Would have a meta like:
 
-```
-response$meta[[1]]$name # col1
-response$meta[[1]]$type # int
-
-response$meta[[1]]$name # col2
-response$meta[[1]]$type # date
-
+```python
+for m in response['meta']:
+    print(m['name'], m['type'])
 ```
 
-The meta types follow those listed as the generic meta data types used in [etl_manager](https://github.com/moj-analytical-services/etl_manager). If you want the actual athena meta data instead you can get them instead of the generic meta data types by setting the `return_athena_types` input parameter to `TRUE` e.g.
+output:
 
 ```
-response <- dbtools::get_athena_query_response("SELECT * from crest_v1.flatfile limit 10000", return_athena_types=TRUE)
+> col1 int
+> col1 date
+```
 
-print(response$meta)
+The meta types follow those listed as the generic meta data types used in [etl_manager](https://github.com/moj-analytical-services/etl_manager). If you want the actual athena meta data instead you can get them instead of the generic meta data types by setting the `return_athena_types` input parameter to `True` e.g.
+
+```python
+response <- pydb.get_athena_query_response("SELECT * from database.table limit 10000", return_athena_types=True)
+
+print(response['meta'])
+```
+
+If you wish to read your SQL query directly into a pandas dataframe you can use the read_sql function. You can apply `*args` or `**kwargs` into this function which are passed down to `pd.read_csv()`.
+
+```python
+import pydbtools as pydb
+
+df = pydb.read_sql("SELECT * FROM database.table limit 1000")
+df.head()
 ```
 
 #### Notes:
@@ -69,11 +86,4 @@ print(response$meta)
 - When data is pulled back into rStudio the column types are either R characters (for any col that was a dates, datetimes, characters) or doubles (for everything else).
 
 
-#### Changelog:
-
-## v0.0.2 - 2018-10-12
-
-- `timeout` is now an input parameter to `get_athena_query_response` if not set there is no timeout for the athena query.
-- `get_athena_query_response` will now print out the athena_client response if the athena query fails.
-
-## v0.0.1 - First Release
+See changelog for release changes
