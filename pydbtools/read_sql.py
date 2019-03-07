@@ -9,7 +9,6 @@ from pydbtools.utils import (
 
 from gluejobutils.s3 import delete_s3_object
 
-
 def read_sql(sql_query, timeout=None, *args, **kwargs):
 
     # Run the SQL query
