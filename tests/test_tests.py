@@ -12,7 +12,7 @@ class ReadSqlTest(unittest.TestCase) :
     """
     Test packages read_sql function works
     """
-    def read_sql(self):
+    def test_read_sql_output(self):
         df = pydb.read_sql("SELECT * from dbtools.test_data")
 
         df_test = isinstance(df, pd.DataFrame)
