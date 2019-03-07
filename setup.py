@@ -10,7 +10,7 @@ setup(
     install_requires=[
         "boto3 >= 1.7.4",
         "pandas >= 0.23.4",
-        "numpy >= 1.16.1"
+        "numpy >= 1.16.1",
         "s3fs >= 0.1.6",
         "gluejobutils >= v1.0.0"
     ],
