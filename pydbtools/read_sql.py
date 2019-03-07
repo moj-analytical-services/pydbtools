@@ -1,7 +1,10 @@
 import numpy as np
 import pandas as pd
 
-import get_athena_query_response.*, utils._athena_meta_conversions
+from pydbtools.get_athena_query_response import get_athena_query_response
+
+from pydbtools.utils import _athena_meta_conversions
+
 from gluejobutils.s3 import delete_s3_object
 
 

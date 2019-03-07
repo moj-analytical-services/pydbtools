@@ -4,7 +4,7 @@ import io
 import time
 import os
 
-from utils import _athena_meta_conversions
+from pydbtools.utils import _athena_meta_conversions
 
 def get_athena_query_response(sql_query, return_athena_types=False, timeout=None):
 
