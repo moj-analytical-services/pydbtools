@@ -4,7 +4,7 @@ This is a simple package that let's you query databases using Amazon Athena and 
 
 To install
 ```
-pip
+pip install git+git://github.com/moj-analytical-services/pydbtools.git#egg=pydbtools
 ```
 
 package requirements are:
