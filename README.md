@@ -76,6 +76,21 @@ df = pydb.read_sql("SELECT * FROM database.table limit 1000")
 df.head()
 ```
 
+## Meta data conversion
+
+Below is a table that explains what the conversion is from our data types to a pandas df (using the `read_sql` function):
+
+| data type | pandas column type| Comment                                                                                 |
+|-----------|-------------------|-----------------------------------------------------------------------------------------|
+| character | object            | [see here](https://stackoverflow.com/questions/34881079/pandas-distinction-between-str-and-object-types)|
+| int       | np.float64        | Pandas integers do not allow nulls so using floats                                      |
+| long      | np.float64        | Pandas integers do not allow nulls so using floats                                      |
+| date      | pandas timestamp  |                                                                                         |
+| datetime  | pandas timestamp  |                                                                                         |
+| boolean   | np.bool           |                                                                                         |
+| float     | np.float64        |                                                                                         |
+| double    | np.float64        |                                                                                         |
+
 #### Notes:
 
 - Amazon Athena using a flavour of SQL called presto docs can be found [here](https://prestodb.io/docs/current/)
