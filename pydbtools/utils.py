@@ -3,6 +3,7 @@ import numpy as np
 # Some notes on the below:
 # - int and bigint: pandas doesn't allow nulls in int columns so have to use float
 # - date and datetime: pandas doesn't really have a datetime type it expects datetimes use parse_dates
+# - string is when athena output is just a text file e.g. SHOW COLUMNS FROM db. Setting as a character
 _athena_meta_conversions = {
     "char": {"etl_manager": "character", "pandas": "object"},
     "varchar": {"etl_manager": "character", "pandas": "object"},
@@ -13,6 +14,7 @@ _athena_meta_conversions = {
     "boolean": {"etl_manager": "boolean", "pandas": "bool"},
     "float": {"etl_manager": "float", "pandas": "float"},
     "double": {"etl_manager": "double", "pandas": "float"},
+    "string": {"etl_manager": "character", "pandas": "object"},
 }
 
 # Two functions below stolen and altered from here:
