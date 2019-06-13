@@ -2,6 +2,8 @@
 
 This is a simple package that let's you query databases using Amazon Athena and get the s3 path to the athena out (as a csv). This is significantly faster than using the the database drivers so might be a good option when pulling in large data. By default, data is converted into a pandas dataframe with equivalent column data types as the Athena table - see "Meta Data" section below.
 
+Note to use this package you need to be added to the StandardDatabaseAccess IAM Policy on the Analytical Platform. Please contact the team if you require access.
+
 To install
 ```
 pip install git+git://github.com/moj-analytical-services/pydbtools.git#egg=pydbtools
