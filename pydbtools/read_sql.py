@@ -40,7 +40,7 @@ def read_sql(
     if not convert_dates:
         parse_dates = False
 
-    if response["s3"].endswith(".txt"):
+    if response["s3_path"].endswith(".txt"):
         df = pd.read_csv(
             response["s3_path"],
             dtype=object,
