@@ -4,7 +4,14 @@ This is a simple package that let's you query databases using Amazon Athena and 
 
 Note to use this package you need to be added to the StandardDatabaseAccess IAM Policy on the Analytical Platform. Please contact the team if you require access.
 
-To install
+To install...
+
+```
+pip install pydbtools
+```
+
+Or from github...
+
 ```
 pip install git+git://github.com/moj-analytical-services/pydbtools.git#egg=pydbtools
 ```

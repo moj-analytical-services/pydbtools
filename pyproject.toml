@@ -1,0 +1,16 @@
+[tool]
+[tool.poetry]
+name = "pydbtools"
+version = "1.0.0"
+description = "A python package to query data via amazon athena and bring it into a pandas df"
+license = "MIT"
+authors = ["Karik Isichei <karik.isichei@digital.justice.gov.uk>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+boto3 = ">=1.7.4"
+gluejobutils = ">=v1.0.0"
+numpy = ">=1.16.1"
+pandas = ">=0.23.4"
+s3fs = ">=0.1.6"
