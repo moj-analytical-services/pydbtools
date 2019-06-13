@@ -1,6 +1,4 @@
 import boto3
-import pandas as pd
-import io
 import time
 import os
 
@@ -65,16 +63,14 @@ def get_athena_query_response(
             # print('waiting...')
             time.sleep(sleep_time)
         elif athena_status["QueryExecution"]["Status"]["State"] == "FAILED":
-            raise ValueError(
-                "athena failed - response error:\n {}".format(
-                    athena_status["QueryExecution"]["Status"]["StateChangeReason"]
-                )
-            )
+            scr = athena_status["QueryExecution"]["Status"]["StateChangeReason"]
+            raise ValueError(f"athena failed - response error:\n {scr}")
         else:
             raise ValueError(
-                "athena failed - unknown reason (printing full response):\n {athena_status}".format(
-                    athena_status
-                )
+                f"""
+            athena failed - unknown reason (printing full response):
+            {athena_status}
+            """
             )
 
         counter += 1
