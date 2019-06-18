@@ -86,13 +86,12 @@ def get_athena_query_response(
             time.sleep(sleep_time)
         elif athena_status["QueryExecution"]["Status"]["State"] == "FAILED":
             scr = athena_status["QueryExecution"]["Status"]["StateChangeReason"]
-            raise ValueError(f"athena failed - response error:\n {scr}")
+            raise ValueError("athena failed - response error:\n {}".format(scr))
         else:
-            raise ValueError(
-                f"""
+            raise ValueError("""
             athena failed - unknown reason (printing full response):
-            {athena_status}
-            """
+            {}
+            """.format(athena_status)
             )
 
         counter += 1
