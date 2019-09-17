@@ -1,5 +1,10 @@
 import pandas as pd
 
+# setting s3fs cache to false is to try an fix this Access Denied ListObjectsV2 issue see below
+# https://github.com/pandas-dev/pandas/issues/27528
+import s3fs
+s3fs.S3FileSystem.cache = False
+
 from pydbtools.get_athena_query_response import get_athena_query_response
 
 from pydbtools.utils import _pd_dtype_dict_from_metadata
