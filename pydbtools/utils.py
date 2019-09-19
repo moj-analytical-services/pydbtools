@@ -1,11 +1,9 @@
 import numpy as np
 
-from gluejobutils.s3 import (
-    s3_path_to_bucket_key, 
-    check_for_s3_file
-)
+from gluejobutils.s3 import s3_path_to_bucket_key, check_for_s3_file
 import os
 import s3fs
+
 
 def get_file(s3_path, check_exists=True):
     """
@@ -20,9 +18,10 @@ def get_file(s3_path, check_exists=True):
             raise FileNotFoundError(f"File not found in S3. full path: {s3_path}")
     fs = s3fs.S3FileSystem()
     fs.invalidate_cache(b)
-    f = fs.open(os.path.join(b,k), "rb")
+    f = fs.open(os.path.join(b, k), "rb")
     del fs
     return f
+
 
 # Some notes on the below:
 # - int and bigint: pandas doesn't allow nulls in int columns so have to use float

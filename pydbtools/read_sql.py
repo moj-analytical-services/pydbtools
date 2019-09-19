@@ -4,10 +4,7 @@ import pandas as pd
 # https://github.com/pandas-dev/pandas/issues/27528
 import s3fs
 from pydbtools.get_athena_query_response import get_athena_query_response
-from pydbtools.utils import (
-    _pd_dtype_dict_from_metadata,
-    get_file
-)
+from pydbtools.utils import _pd_dtype_dict_from_metadata, get_file
 from gluejobutils.s3 import delete_s3_object
 
 
@@ -48,17 +45,10 @@ def read_sql(
     f = get_file(response["s3_path"])
     if response["s3_path"].endswith(".txt"):
         df = pd.read_csv(
-            f,
-            dtype=object,
-            header=None,
-            names=["output"],
-            *args,
-            **kwargs
+            f, dtype=object, header=None, names=["output"], *args, **kwargs
         )
     else:
-        df = pd.read_csv(
-            f, dtype=dtype, parse_dates=parse_dates, *args, **kwargs
-        )
+        df = pd.read_csv(f, dtype=dtype, parse_dates=parse_dates, *args, **kwargs)
 
     # Delete both the SQL query and the meta data
     delete_s3_object(response["s3_path"])
