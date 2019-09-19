@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+# v1.0.3
+
+## Changes
+
+- Added a minor workaround to fix what previous patch tried to fix and failed. See [issue](https://github.com/moj-analytical-services/pydbtools/issues/10).
+
 # v1.0.2
 
 ## Changes
