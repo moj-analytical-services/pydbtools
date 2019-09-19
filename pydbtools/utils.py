@@ -2,8 +2,14 @@ import numpy as np
 
 from gluejobutils.s3 import s3_path_to_bucket_key, check_for_s3_file
 import os
-import s3fs
+from s3fs import S3FileSystem
 
+# pydbtools will create a new a new S3 object (then delete it post read). In the first call read
+# the cache is empty but then filled. If pydbtools is called again the cache is referenced and
+# you get an NoFileError.
+# Setting cachable to false fixes this. cachable is class object from fsspec.AbstractFileSystem
+# which S3FileSystem inherits. 
+S3FileSystem.cachable = False
 
 def get_file(s3_path, check_exists=True):
     """
@@ -16,10 +22,9 @@ def get_file(s3_path, check_exists=True):
     if check_exists:
         if not check_for_s3_file(s3_path):
             raise FileNotFoundError(f"File not found in S3. full path: {s3_path}")
-    fs = s3fs.S3FileSystem()
-    fs.invalidate_cache(b)
+    fs = S3FileSystem()
     f = fs.open(os.path.join(b, k), "rb")
-    del fs
+    
     return f
 
 
