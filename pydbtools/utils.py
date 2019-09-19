@@ -1,5 +1,34 @@
 import numpy as np
 
+from gluejobutils.s3 import s3_path_to_bucket_key, check_for_s3_file
+import os
+from s3fs import S3FileSystem
+
+# pydbtools will create a new a new S3 object (then delete it post read). In the first call read
+# the cache is empty but then filled. If pydbtools is called again the cache is referenced and
+# you get an NoFileError.
+# Setting cachable to false fixes this. cachable is class object from fsspec.AbstractFileSystem
+# which S3FileSystem inherits.
+S3FileSystem.cachable = False
+
+
+def get_file(s3_path, check_exists=True):
+    """
+    Returns an file using s3fs without caching objects (workaround for issue #10).
+
+    s3_path: path to file in S3 e.g. s3://bucket/object/path.csv
+    check_exists: If True (default) will check for s3 file existance before returning file.
+    """
+    b, k = s3_path_to_bucket_key(s3_path)
+    if check_exists:
+        if not check_for_s3_file(s3_path):
+            raise FileNotFoundError(f"File not found in S3. full path: {s3_path}")
+    fs = S3FileSystem()
+    f = fs.open(os.path.join(b, k), "rb")
+
+    return f
+
+
 # Some notes on the below:
 # - int and bigint: pandas doesn't allow nulls in int columns so have to use float
 # - date and datetime: pandas doesn't really have a datetime type it expects datetimes use parse_dates

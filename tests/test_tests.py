@@ -8,7 +8,7 @@ import pandas as pd
 
 import pydbtools as pydb
 
-class ReadSqlTest(unittest.TestCase) :
+class ReadSqlTest(unittest.TestCase):
     """
     Test packages read_sql function works
     """

@@ -3,12 +3,8 @@ import pandas as pd
 # setting s3fs cache to false is to try an fix this Access Denied ListObjectsV2 issue see below
 # https://github.com/pandas-dev/pandas/issues/27528
 import s3fs
-s3fs.S3FileSystem.cache = False
-
 from pydbtools.get_athena_query_response import get_athena_query_response
-
-from pydbtools.utils import _pd_dtype_dict_from_metadata
-
+from pydbtools.utils import _pd_dtype_dict_from_metadata, get_file
 from gluejobutils.s3 import delete_s3_object
 
 
@@ -45,19 +41,14 @@ def read_sql(
     if not convert_dates:
         parse_dates = False
 
+    # returns an file using s3fs without caching objects
+    f = get_file(response["s3_path"])
     if response["s3_path"].endswith(".txt"):
         df = pd.read_csv(
-            response["s3_path"],
-            dtype=object,
-            header=None,
-            names=["output"],
-            *args,
-            **kwargs
+            f, dtype=object, header=None, names=["output"], *args, **kwargs
         )
     else:
-        df = pd.read_csv(
-            response["s3_path"], dtype=dtype, parse_dates=parse_dates, *args, **kwargs
-        )
+        df = pd.read_csv(f, dtype=dtype, parse_dates=parse_dates, *args, **kwargs)
 
     # Delete both the SQL query and the meta data
     delete_s3_object(response["s3_path"])
