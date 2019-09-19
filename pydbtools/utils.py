@@ -1,5 +1,29 @@
 import numpy as np
 
+from gluejobutils.s3 import (
+    s3_path_to_bucket_key, 
+    check_for_s3_file
+)
+import os
+import s3fs
+
+def get_file(s3_path, check_exists=True):
+    """
+    Returns an file using s3fs without caching objects (workaround for issue #10).
+
+    s3_path: path to file in S3 e.g. s3://bucket/object/path.csv
+    check_exists: If True (default) will check for s3 file existance before returning file.
+    """
+    b, k = s3_path_to_bucket_key(s3_path)
+    if check_exists:
+        if not check_for_s3_file(s3_path):
+            raise FileNotFoundError(f"File not found in S3. full path: {s3_path}")
+    fs = s3fs.S3FileSystem()
+    fs.invalidate_cache(b)
+    f = fs.open(os.path.join(b,k), "rb")
+    del fs
+    return f
+
 # Some notes on the below:
 # - int and bigint: pandas doesn't allow nulls in int columns so have to use float
 # - date and datetime: pandas doesn't really have a datetime type it expects datetimes use parse_dates
