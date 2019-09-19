@@ -8,8 +8,9 @@ from s3fs import S3FileSystem
 # the cache is empty but then filled. If pydbtools is called again the cache is referenced and
 # you get an NoFileError.
 # Setting cachable to false fixes this. cachable is class object from fsspec.AbstractFileSystem
-# which S3FileSystem inherits. 
+# which S3FileSystem inherits.
 S3FileSystem.cachable = False
+
 
 def get_file(s3_path, check_exists=True):
     """
@@ -24,7 +25,7 @@ def get_file(s3_path, check_exists=True):
             raise FileNotFoundError(f"File not found in S3. full path: {s3_path}")
     fs = S3FileSystem()
     f = fs.open(os.path.join(b, k), "rb")
-    
+
     return f
 
 
