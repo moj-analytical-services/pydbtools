@@ -1,10 +1,79 @@
 import boto3
 import time
 import os
+import uuid
 
 from pydbtools.utils import _athena_meta_conversions
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
 
+
+class AthenaQuery():
+
+    def __init__(self, sql_query, return_athena_types=False, timeout=None, force_ec2=False):
+        self.verify_sql(sql_query)
+
+        self.sql_query = sql_query
+        self.return_athena_types = return_athena_types
+        self.timeout = timeout
+        self.force_ec2 = force_ec2
+
+        self.bucket = "alpha-athena-query-dump"
+        self.rn = "eu-west-1"
+
+        
+
+    def __enter__(self):
+        if self.force_ec2:
+            provider = InstanceMetadataProvider(
+                iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
+            )
+            creds = provider.load().get_frozen_credentials()
+            self.sts_client = boto3.client(
+                "sts",
+                region_name=self.rn,
+                aws_access_key_id=creds.access_key,
+                aws_secret_access_key=creds.secret_key,
+                aws_session_token=creds.token,
+            )
+            self.athena_client = boto3.client(
+                "athena",
+                region_name=self.rn,
+                aws_access_key_id=creds.access_key,
+                aws_secret_access_key=creds.secret_key,
+                aws_session_token=creds.token,
+            )
+        else:
+            self.sts_client = boto3.client("sts", region_name=self.rn)
+            self.athena_client = boto3.client("athena", region_name=self.rn)
+
+        self.sts_resp = self.sts_client.get_caller_identity()
+        self.out_path = os.path.join("s3://", self.bucket, self.sts_resp["UserId"], "__athena_temp__/")
+
+        self.query_response = self.athena_client.start_query_execution(
+            QueryString=self.sql_with_create_table(),
+            ResultConfiguration={'OutputLocation': self.out_path}
+        )
+
+        return self
+
+    def verify_sql(self, sql_query):
+        sql_temp = sql_query.strip().lower()
+        if not sql_temp.startswith("select"):
+            raise ValueError("The sql statement must be a select query i.e. it must start with the token 'select'")
+
+    def sql_with_create_table(self):
+
+        uid = str(uuid.uuid4()).replace("-", "")
+        self.table_name = "deleteme{}".format(uid)
+        additional_sql = f"""
+            create table deleteme.{self.table_name}
+            WITH (
+            format = 'PARQUET',
+            parquet_compression = 'SNAPPY')
+            as
+        """
+
+        return f"{additional_sql} {self.sql_query}"
 
 def get_athena_query_response(
     sql_query, return_athena_types=False, timeout=None, force_ec2=False
