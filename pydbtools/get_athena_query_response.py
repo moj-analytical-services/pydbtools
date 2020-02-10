@@ -2,7 +2,10 @@ import boto3
 import time
 import os
 import uuid
+import pyarrow.parquet as pq
+import s3fs
 
+from dataengineeringutils3.s3 import delete_s3_folder_contents
 from pydbtools.utils import _athena_meta_conversions
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
 
@@ -19,8 +22,7 @@ class AthenaQuery():
 
         self.bucket = "alpha-athena-query-dump"
         self.rn = "eu-west-1"
-
-        
+    
 
     def __enter__(self):
         if self.force_ec2:
@@ -42,18 +44,25 @@ class AthenaQuery():
                 aws_secret_access_key=creds.secret_key,
                 aws_session_token=creds.token,
             )
+            self.glue_client = boto3.client(
+                'glue',
+                region_name=self.rn,
+                aws_access_key_id=creds.access_key,
+                aws_secret_access_key=creds.secret_key,
+                aws_session_token=creds.token)
         else:
             self.sts_client = boto3.client("sts", region_name=self.rn)
             self.athena_client = boto3.client("athena", region_name=self.rn)
+            self.glue_client = boto3.client('glue', region_name=self.rn)
 
         self.sts_resp = self.sts_client.get_caller_identity()
         self.out_path = os.path.join("s3://", self.bucket, self.sts_resp["UserId"], "__athena_temp__/")
 
-        self.query_response = self.athena_client.start_query_execution(
+        self.response = self.athena_client.start_query_execution(
             QueryString=self.sql_with_create_table(),
             ResultConfiguration={'OutputLocation': self.out_path}
         )
-
+        print("hi")
         return self
 
     def verify_sql(self, sql_query):
@@ -74,6 +83,52 @@ class AthenaQuery():
         """
 
         return f"{additional_sql} {self.sql_query}"
+
+    def complete(self):
+        sleep_time = 2
+        counter = 0
+        while True:
+            self.athena_status = self.athena_client.get_query_execution(
+                QueryExecutionId=self.response["QueryExecutionId"]
+            )
+            if self.athena_status["QueryExecution"]["Status"]["State"] == "SUCCEEDED":
+                break
+            elif self.athena_status["QueryExecution"]["Status"]["State"] in [
+                "QUEUED",
+                "RUNNING",
+            ]:
+                # print('waiting...')
+                time.sleep(sleep_time)
+            elif self.athena_status["QueryExecution"]["Status"]["State"] == "FAILED":
+                scr = self.athena_status["QueryExecution"]["Status"]["StateChangeReason"]
+                raise ValueError("athena failed - response error:\n {}".format(scr))
+            else:
+                raise ValueError(
+                    """
+                athena failed - unknown reason (printing full response):
+                {}
+                """.format(
+                        self.athena_status
+                    )
+                )
+
+            counter += 1
+            if self.timeout:
+                if counter * sleep_time > self.timeout:
+                    raise ValueError("athena timed out")
+
+    def get_parquet(self):
+        print(self.athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"])
+        return pq.ParquetDataset(self.athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"], filesystem=s3fs.S3FileSystem()).read_pandas().to_pandas()
+    
+    def __exit__(self, *args):
+        delete_s3_folder_contents(self.out_path)
+        try:
+            self.glue_client.delete_table(DatabaseName="deleteme", Name=self.table_name)
+        except self.glue_client.exceptions.EntityNotFoundException:
+            #If the query never finished, the table won't have been created
+            pass
+
 
 def get_athena_query_response(
     sql_query, return_athena_types=False, timeout=None, force_ec2=False
