@@ -118,7 +118,6 @@ class AthenaQuery():
                     raise ValueError("athena timed out")
 
     def get_parquet(self):
-        print(self.athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"])
         return pq.ParquetDataset(self.athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"], filesystem=s3fs.S3FileSystem()).read_pandas().to_pandas()
     
     def __exit__(self, *args):
