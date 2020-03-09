@@ -4,6 +4,7 @@ import os
 import uuid
 import pyarrow.parquet as pq
 import s3fs
+import sqlparse
 
 from dataengineeringutils3.s3 import delete_s3_folder_contents
 from pydbtools.utils import _athena_meta_conversions
@@ -12,17 +13,19 @@ from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetch
 
 class AthenaQuery():
 
-    def __init__(self, sql_query, return_athena_types=False, timeout=None, force_ec2=False):
-        self.verify_sql(sql_query)
-
-        self.sql_query = sql_query
+    def __init__(self, return_athena_types=False, timeout=None, force_ec2=False, table_name=None):
+        if not table_name:
+            uid = str(uuid.uuid4()).replace("-", "")  
+            self.table_name = f"deleteme{uid}"
+            print(self.table_name)
+        self.sql_query = None
         self.return_athena_types = return_athena_types
         self.timeout = timeout
         self.force_ec2 = force_ec2
 
         self.bucket = "alpha-athena-query-dump"
         self.rn = "eu-west-1"
-    
+
 
     def __enter__(self):
         if self.force_ec2:
@@ -57,23 +60,41 @@ class AthenaQuery():
 
         self.sts_resp = self.sts_client.get_caller_identity()
         self.out_path = os.path.join("s3://", self.bucket, self.sts_resp["UserId"], "__athena_temp__/")
-
-        self.response = self.athena_client.start_query_execution(
-            QueryString=self.sql_with_create_table(),
-            ResultConfiguration={'OutputLocation': self.out_path}
-        )
-        print("hi")
+        print(self.out_path)
         return self
 
-    def verify_sql(self, sql_query):
-        sql_temp = sql_query.strip().lower()
-        if not sql_temp.startswith("select"):
-            raise ValueError("The sql statement must be a select query i.e. it must start with the token 'select'")
+    def check_sql(self):
+        parsed = sqlparse.parse(self.sql_query)
+        for p in parsed:
+            if p.get_type() != "SELECT":
+                raise ValueError("The sql statement must be a select query")
 
-    def sql_with_create_table(self):
+    def start_query(self):
+        self.response = self.athena_client.start_query_execution(
+            QueryString=self.sql_query,
+            ResultConfiguration={'OutputLocation': self.out_path}
+        )
+        return self
 
-        uid = str(uuid.uuid4()).replace("-", "")
-        self.table_name = "deleteme{}".format(uid)
+
+    def nope(self):
+        print("nope")
+
+    
+    def read_sql(self, sql_query):
+        print("hi from read_sql")
+        self.sql_query = sql_query
+        self.check_sql()
+        self.sql_query = self.sql_with_create_table()      
+        self.start_query()
+        self.complete()
+        return pq.ParquetDataset(self.athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"], filesystem=s3fs.S3FileSystem()).read_pandas().to_pandas()
+
+    
+    def create_table(self):
+        pass
+
+    def sql_with_create_table(self):        
         additional_sql = f"""
             create table deleteme.{self.table_name}
             WITH (
@@ -81,7 +102,7 @@ class AthenaQuery():
             parquet_compression = 'SNAPPY')
             as
         """
-
+        print(additional_sql)
         return f"{additional_sql} {self.sql_query}"
 
     def complete(self):
@@ -117,7 +138,10 @@ class AthenaQuery():
                 if counter * sleep_time > self.timeout:
                     raise ValueError("athena timed out")
 
+    
+    
     def get_parquet(self):
+        print(f'getting from {self.athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"]}')
         return pq.ParquetDataset(self.athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"], filesystem=s3fs.S3FileSystem()).read_pandas().to_pandas()
     
     def __exit__(self, *args):
@@ -127,7 +151,6 @@ class AthenaQuery():
         except self.glue_client.exceptions.EntityNotFoundException:
             #If the query never finished, the table won't have been created
             pass
-
 
 def get_athena_query_response(
     sql_query, return_athena_types=False, timeout=None, force_ec2=False
