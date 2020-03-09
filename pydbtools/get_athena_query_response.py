@@ -11,13 +11,12 @@ from pydbtools.utils import _athena_meta_conversions
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
 
 
-class AthenaQuery():
+class AthenaConnection():
 
     def __init__(self, return_athena_types=False, timeout=None, force_ec2=False, table_name=None):
         if not table_name:
             uid = str(uuid.uuid4()).replace("-", "")  
             self.table_name = f"deleteme{uid}"
-            print(self.table_name)
         self.sql_query = None
         self.return_athena_types = return_athena_types
         self.timeout = timeout
@@ -69,6 +68,7 @@ class AthenaQuery():
             if p.get_type() != "SELECT":
                 raise ValueError("The sql statement must be a select query")
 
+
     def start_query(self):
         self.response = self.athena_client.start_query_execution(
             QueryString=self.sql_query,
@@ -76,13 +76,8 @@ class AthenaQuery():
         )
         return self
 
-
-    def nope(self):
-        print("nope")
-
     
     def read_sql(self, sql_query):
-        print("hi from read_sql")
         self.sql_query = sql_query
         self.check_sql()
         self.sql_query = self.sql_with_create_table()      
@@ -102,7 +97,6 @@ class AthenaQuery():
             parquet_compression = 'SNAPPY')
             as
         """
-        print(additional_sql)
         return f"{additional_sql} {self.sql_query}"
 
     def complete(self):
