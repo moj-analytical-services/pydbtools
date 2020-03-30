@@ -35,7 +35,7 @@ def read_sql(
     if parquet is True:
         with AthenaConnection() as c:
             df = c.read_sql(sql_query)
-            return df
+        return df
 
     # Run the SQL query
     response = get_athena_query_response(
