@@ -16,11 +16,13 @@ from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetch
 # which S3FileSystem inherits.
 S3FileSystem.cachable = False
 
+# Get role specific path for athena output
+bucket = "alpha-athena-query-dump"
+
 
 def get_user_id_and_table_dir(
-    force_ec2=False: bool,
-    region_name="eu-west-1": str
-    ) -> Tuple[str, str]:
+    force_ec2: bool = False, region_name: str = "eu-west-1"
+) -> Tuple[str, str]:
     if force_ec2:
         provider = InstanceMetadataProvider(
             iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
@@ -43,10 +45,8 @@ def get_user_id_and_table_dir(
 
     return (sts_resp["UserId"], out_path)
 
-def get_athena_client(
-    force_ec2=False: bool,
-    region_name="eu-west-1": str
-):
+
+def get_athena_client(force_ec2: bool = False, region_name: str = "eu-west-1"):
     if force_ec2:
         provider = InstanceMetadataProvider(
             iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
@@ -65,7 +65,7 @@ def get_athena_client(
     return athena_client
 
 
-def get_file(s3_path: str, check_exists=True: bool):
+def get_file(s3_path: str, check_exists: bool = True):
     """
     Returns an file using s3fs without caching objects (workaround for issue #10).
 
@@ -101,7 +101,7 @@ _athena_meta_conversions = {
 
 # Two functions below stolen and altered from here:
 # https://github.com/moj-analytical-services/dataengineeringutils/blob/metadata_conformance/dataengineeringutils/pd_metadata_conformance.py
-def _pd_dtype_dict_from_metadata(athena_meta):
+def _pd_dtype_dict_from_metadata(athena_meta: list):
     """
     Convert the athena table metadata to the dtype dict that needs to be
     passed to the dtype argument of pd.read_csv. Also return list of columns that pandas needs to convert to dates/datetimes
