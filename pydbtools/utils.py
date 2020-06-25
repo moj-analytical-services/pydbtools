@@ -1,8 +1,13 @@
+from typing import Tuple
+
 import numpy as np
 
 from gluejobutils.s3 import s3_path_to_bucket_key, check_for_s3_file
 import os
 from s3fs import S3FileSystem
+
+import boto3
+from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
 
 # pydbtools will create a new a new S3 object (then delete it post read). In the first call read
 # the cache is empty but then filled. If pydbtools is called again the cache is referenced and
@@ -12,7 +17,55 @@ from s3fs import S3FileSystem
 S3FileSystem.cachable = False
 
 
-def get_file(s3_path, check_exists=True):
+def get_user_id_and_table_dir(
+    force_ec2=False: bool,
+    region_name="eu-west-1": str
+    ) -> Tuple[str, str]:
+    if force_ec2:
+        provider = InstanceMetadataProvider(
+            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
+        )
+        creds = provider.load().get_frozen_credentials()
+        sts_client = boto3.client(
+            "sts",
+            region_name=region_name,
+            aws_access_key_id=creds.access_key,
+            aws_secret_access_key=creds.secret_key,
+            aws_session_token=creds.token,
+        )
+    else:
+        sts_client = boto3.client("sts", region_name=region_name)
+
+    sts_resp = sts_client.get_caller_identity()
+    out_path = os.path.join("s3://", bucket, sts_resp["UserId"], "__athena_temp__/")
+    if out_path[-1] != "/":
+        out_path += "/"
+
+    return (sts_resp["UserId"], out_path)
+
+def get_athena_client(
+    force_ec2=False: bool,
+    region_name="eu-west-1": str
+):
+    if force_ec2:
+        provider = InstanceMetadataProvider(
+            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
+        )
+        creds = provider.load().get_frozen_credentials()
+        athena_client = boto3.client(
+            "athena",
+            region_name=region_name,
+            aws_access_key_id=creds.access_key,
+            aws_secret_access_key=creds.secret_key,
+            aws_session_token=creds.token,
+        )
+    else:
+        athena_client = boto3.client("athena", region_name=region_name)
+
+    return athena_client
+
+
+def get_file(s3_path: str, check_exists=True: bool):
     """
     Returns an file using s3fs without caching objects (workaround for issue #10).
 
