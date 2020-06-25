@@ -5,6 +5,28 @@ import os
 from pydbtools.utils import _athena_meta_conversions
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
 
+"""
+from constants import username?
+"""
+
+def create_database():
+    """
+    create athena database with temp name, pass if already exists
+    """
+    pass
+
+def create_temp_table(table_name):
+    """
+    create a table inside the database from create database
+    """
+    pass
+
+def add_user_to_temp():
+    """
+    add alpha username to temp database name when user queries a table
+    """
+    return f"temp_{username}"
+
 
 def get_athena_query_response(
     sql_query, return_athena_types=False, timeout=None, force_ec2=False
@@ -36,6 +58,9 @@ def get_athena_query_response(
     bucket = "alpha-athena-query-dump"
     rn = "eu-west-1"
 
+
+    # should we move the below to a function in constants that is run on import?
+    # would allow us to have userID as global for functions above
     if force_ec2:
         provider = InstanceMetadataProvider(
             iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
