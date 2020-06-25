@@ -43,9 +43,11 @@ def get_user_id_and_table_dir(
     if out_path[-1] != "/":
         out_path += "/"
 
-    username = sts_resp["UserId"]
-    username = username.split(":")[-1].split("-", 1)[-1].replace("-", "_")
-    return (username, out_path)
+    return (sts_resp["UserId"], out_path)
+
+
+def get_database_name_from_userid(user_id: str):
+    return user_id.split(":")[-1].split("-", 1)[-1].replace("-", "_")
 
 
 def get_athena_client(force_ec2: bool = False, region_name: str = "eu-west-1"):
