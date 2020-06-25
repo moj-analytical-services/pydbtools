@@ -9,6 +9,7 @@ from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetch
 from constants import username?
 """
 
+
 def create_database():
     """
     create athena database with temp name, pass if already exists
@@ -21,11 +22,11 @@ def create_temp_table(table_name):
     """
     pass
 
-def add_user_to_temp():
+def add_user_to_temp(sql_query):
     """
     add alpha username to temp database name when user queries a table
     """
-    return f"temp_{username}"
+    return sql_query.replace("temp__", "temp__{username}")
 
 
 def get_athena_query_response(
