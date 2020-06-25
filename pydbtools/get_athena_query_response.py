@@ -2,35 +2,19 @@ import boto3
 import time
 import os
 
-from pydbtools.utils import _athena_meta_conversions
-from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
-
-"""
-from constants import username?
-"""
-
-
-def create_database():
-    """
-    create athena database with temp name, pass if already exists
-    """
-    pass
-
-def create_temp_table(table_name):
-    """
-    create a table inside the database from create database
-    """
-    pass
-
-def add_user_to_temp(sql_query):
-    """
-    add alpha username to temp database name when user queries a table
-    """
-    return sql_query.replace("temp__", "temp__{username}")
+from pydbtools.utils import (
+    _athena_meta_conversions,
+    get_user_id_and_table_dir,
+    get_athena_client,
+)
 
 
 def get_athena_query_response(
-    sql_query, return_athena_types=False, timeout=None, force_ec2=False
+    sql_query: str,
+    return_athena_types: bool = False,
+    timeout: int = None,
+    force_ec2: bool = False,
+    region_name: str = "eu-west-1",
 ):
     """
     Runs an SQL query against our Athena database and returns a tuple.
@@ -55,41 +39,8 @@ def get_athena_query_response(
     necessary when using this in Python. Default is False.
     """
 
-    # Get role specific path for athena output
-    bucket = "alpha-athena-query-dump"
-    rn = "eu-west-1"
-
-
-    # should we move the below to a function in constants that is run on import?
-    # would allow us to have userID as global for functions above
-    if force_ec2:
-        provider = InstanceMetadataProvider(
-            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
-        )
-        creds = provider.load().get_frozen_credentials()
-        sts_client = boto3.client(
-            "sts",
-            region_name=rn,
-            aws_access_key_id=creds.access_key,
-            aws_secret_access_key=creds.secret_key,
-            aws_session_token=creds.token,
-        )
-        athena_client = boto3.client(
-            "athena",
-            region_name=rn,
-            aws_access_key_id=creds.access_key,
-            aws_secret_access_key=creds.secret_key,
-            aws_session_token=creds.token,
-        )
-    else:
-        sts_client = boto3.client("sts", region_name=rn)
-        athena_client = athena_client = boto3.client("athena", region_name=rn)
-
-    sts_resp = sts_client.get_caller_identity()
-    out_path = os.path.join("s3://", bucket, sts_resp["UserId"], "__athena_temp__/")
-
-    if out_path[-1] != "/":
-        out_path += "/"
+    _, out_path = get_user_id_and_table_dir(force_ec2, region_name)
+    athena_client = get_athena_client(force_ec2, region_name)
 
     # Run the athena query
     response = athena_client.start_query_execution(
