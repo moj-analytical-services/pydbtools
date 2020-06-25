@@ -34,7 +34,7 @@ select * from x
         (sql_fail, False)
     ],
 )
-def test_sql_parse(test_input, expected):
+def test_sql_parse(test_input: str, expected: bool):
     try:
         check_sql(test_input)
         passed = True
