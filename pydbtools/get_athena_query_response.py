@@ -33,7 +33,7 @@ def get_athena_query_response(
     """
 
     # Get role specific path for athena output
-    bucket = "alpha-athena-query-dump"
+    bucket = "mojap-athena-query-dump"
     rn = "eu-west-1"
 
     if force_ec2:
