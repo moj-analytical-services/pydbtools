@@ -14,4 +14,8 @@ gluejobutils = ">=v1.0.0"
 numpy = ">=1.16.1"
 pandas = "^0.23"
 s3fs = ">=0.2.2"
+sqlparse = "^0.3.1"
 poetry_version = ">=0.1.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.4"
