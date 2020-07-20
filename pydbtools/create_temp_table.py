@@ -1,10 +1,11 @@
 import sqlparse
 from pydbtools.utils import (
-    get_user_id_and_table_dir # plan to use this for creating temp db name
+    get_database_name_from_userid,
+    get_user_id_and_table_dir
 )
 from pydbtools.read_sql import read_sql
 
-username, _ = get_user_id_and_table_dir()
+dbname = get_database_name_from_userid(get_user_id_and_table_dir()[0])
 
 def check_sql(sql_query: str):
     """
@@ -23,17 +24,18 @@ def add_user_to_temp(sql_query):
     """
     add alpha username to temp database name when user queries a table
     """
-    return sql_query.lower().replace("from __temp__.", f"from {username}.")
+    return sql_query.lower().replace("from __temp__.", f"from {dbname}.")
 
 def create_database():
     """
     create athena database with temp name, pass if already exists
     """  
-    read_sql(f"create database if exists {username}")
+    read_sql(f"create database if exists {dbname}")
 
 def create_temp_table(table_name):
     """
     create a table inside the database from create database
     """
+    create_database()
     pass
 
