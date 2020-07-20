@@ -30,7 +30,7 @@ def create_database():
     """
     create athena database with temp name, pass if already exists
     """  
-    read_sql(f"create database if exists {dbname}")
+    read_sql(f"create database if not exists {dbname}")
 
 def create_temp_table(table_name):
     """
