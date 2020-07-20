@@ -21,6 +21,25 @@ bucket = "alpha-athena-query-dump"
 
 temp_database_name_prefix = "mojap_de_temp_"
 
+def replace_temp_database_name_reference(
+        sql_query: str,
+        database_name: str
+    ) -> str:
+    """
+    Replaces references to to the users temp database __temp__
+    with the database_name string provided.
+
+    Args:
+        sql_query (str): The raw SQL query as a string
+        database_name (str): The database name to replace __temp__
+
+    Returns:
+        str: The new SQL query which is sent to Athena
+    """
+
+    pass
+
+
 def get_user_id_and_table_dir(
     force_ec2: bool = False, region_name: str = "eu-west-1"
 ) -> Tuple[str, str]:
