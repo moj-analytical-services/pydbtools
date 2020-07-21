@@ -26,13 +26,6 @@ def check_sql(sql_query: str):
             raise ValueError("The sql statement must be a select query")
 
 
-def create_database():
-    """
-    create athena database with temp name, pass if already exists
-    """
-    pass
-
-
 def create_temp_table(
         sql_query: str,
         table_name: str,
@@ -64,12 +57,21 @@ def create_temp_table(
 
     # Create named stuff
     user_id, out_path = get_user_id_and_table_dir(force_ec2, region_name)
-    out_path = os.path.join(out_path, "__athena_temp_db__/", table_name)
+    db_path = os.path.join(out_path, "__athena_temp_db__/")
+    table_path = os.path.join(db_path, table_name)
     temp_db_name = get_database_name_from_userid(user_id)
-    create_database(temp_db_name)
+    
+    create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
+
+    _ = get_athena_query_response(
+        sql_query=create_db_query,
+        timeout=None,
+        force_ec2=force_ec2,
+        region_name=region_name,
+    )
 
     # Clear out table every time
-    delete_s3_folder_contents(out_path)
+    delete_s3_folder_contents(table_path)
 
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
