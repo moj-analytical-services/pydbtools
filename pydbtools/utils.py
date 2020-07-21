@@ -4,6 +4,7 @@ import numpy as np
 
 from gluejobutils.s3 import s3_path_to_bucket_key, check_for_s3_file
 import os
+import sqlparse
 from s3fs import S3FileSystem
 
 import boto3
@@ -21,6 +22,22 @@ bucket = "alpha-athena-query-dump"
 
 temp_database_name_prefix = "mojap_de_temp_"
 
+
+def clean_query(sql_query: str) -> str:
+    """
+    removes trailing whitespace, newlines and final 
+    semicolon from sql_query for use with
+    sqlparse package
+
+    Args:
+        sql_query (str): The raw SQL query
+
+    Returns:
+        str: The cleaned SQL query
+    """
+    return " ".join(sql_query.splitlines()).strip().rstrip(";")
+
+
 def replace_temp_database_name_reference(
         sql_query: str,
         database_name: str
@@ -36,9 +53,22 @@ def replace_temp_database_name_reference(
     Returns:
         str: The new SQL query which is sent to Athena
     """
-
-    pass
-
+    # check query is valid and clean
+    parsed = sqlparse.parse(clean_query(sql_query))
+    new_query = []
+    for query in parsed:
+        for word in str(query).strip().split(" "):
+            if "__temp__." in word.lower():
+                word = word.lower().replace("__temp__.", f"{database_name}.")
+            new_query.append(word)
+        if ";" not in new_query[-1]:
+            last_entry = new_query[-1] + ";"
+        else:
+             last_entry = new_query[-1]   
+        del new_query[-1]
+        new_query.append(last_entry)
+    return " ".join(new_query)
+        
 
 def get_user_id_and_table_dir(
     force_ec2: bool = False, region_name: str = "eu-west-1"
