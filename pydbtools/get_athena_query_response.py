@@ -6,6 +6,8 @@ from pydbtools.utils import (
     _athena_meta_conversions,
     get_user_id_and_table_dir,
     get_athena_client,
+    get_database_name_from_userid,
+    replace_temp_database_name_reference
 )
 
 
@@ -39,7 +41,12 @@ def get_athena_query_response(
     necessary when using this in Python. Default is False.
     """
 
-    _, out_path = get_user_id_and_table_dir(force_ec2, region_name)
+    user_id, out_path = get_user_id_and_table_dir(force_ec2, region_name)
+
+    temp_db_name = get_database_name_from_userid(user_id)
+    sql_query = replace_temp_database_name_reference(sql_query, temp_db_name)
+
+    out_path = os.path.join(out_path, "__athena_query_dump__/")
     athena_client = get_athena_client(force_ec2, region_name)
 
     # Run the athena query

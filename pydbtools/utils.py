@@ -19,6 +19,26 @@ S3FileSystem.cachable = False
 # Get role specific path for athena output
 bucket = "alpha-athena-query-dump"
 
+temp_database_name_prefix = "mojap_de_temp_"
+
+def replace_temp_database_name_reference(
+        sql_query: str,
+        database_name: str
+    ) -> str:
+    """
+    Replaces references to to the users temp database __temp__
+    with the database_name string provided.
+
+    Args:
+        sql_query (str): The raw SQL query as a string
+        database_name (str): The database name to replace __temp__
+
+    Returns:
+        str: The new SQL query which is sent to Athena
+    """
+
+    pass
+
 
 def get_user_id_and_table_dir(
     force_ec2: bool = False, region_name: str = "eu-west-1"
@@ -39,15 +59,17 @@ def get_user_id_and_table_dir(
         sts_client = boto3.client("sts", region_name=region_name)
 
     sts_resp = sts_client.get_caller_identity()
-    out_path = os.path.join("s3://", bucket, sts_resp["UserId"], "__athena_temp__/")
+    out_path = os.path.join("s3://", bucket, sts_resp["UserId"])
     if out_path[-1] != "/":
         out_path += "/"
 
     return (sts_resp["UserId"], out_path)
 
 
-def get_database_name_from_userid(user_id: str):
-    return user_id.split(":")[-1].split("-", 1)[-1].replace("-", "_")
+def get_database_name_from_userid(user_id: str) -> str:
+    unique_db_name = user_id.split(":")[-1].split("-", 1)[-1].replace("-", "_")
+    unique_db_name = temp_database_name_prefix + unique_db_name
+    return unique_db_name
 
 
 def get_athena_client(force_ec2: bool = False, region_name: str = "eu-west-1"):
