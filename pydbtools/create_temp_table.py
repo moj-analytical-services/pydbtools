@@ -9,6 +9,7 @@ from pydbtools.utils import (
     temp_database_name_prefix,
     get_user_id_and_table_dir,
     get_database_name_from_userid,
+    clean_query
 )
 
 from pydbtools import get_athena_query_response
@@ -17,15 +18,14 @@ def check_sql(sql_query: str):
     """
     Validates sql_query to confirm it is a select statement
     """
-    sql_query = sql_query.rstrip()
-    if sql_query[-1] == ";":
-        sql_query = sql_query.rstrip(";")
-    parsed = sqlparse.parse(sql_query)
+    parsed = sqlparse.parse(clean_query(sql_query))
+    i = 0
     for p in parsed:
-        if p.get_type() != "SELECT":
-            raise ValueError("The sql statement must be a select query")
+        if p.get_type() != "SELECT" or i > 0:
+            raise ValueError("The sql statement must be a single select query")
+        i += 1
 
-
+        
 def create_temp_table(
         sql_query: str,
         table_name: str,
