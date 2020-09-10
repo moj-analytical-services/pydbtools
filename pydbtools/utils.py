@@ -18,7 +18,7 @@ from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetch
 S3FileSystem.cachable = False
 
 # Get role specific path for athena output
-bucket = "alpha-athena-query-dump"
+bucket = "mojap-athena-query-dump"
 
 temp_database_name_prefix = "mojap_de_temp_"
 
