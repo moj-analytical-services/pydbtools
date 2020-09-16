@@ -4,6 +4,7 @@ import numpy as np
 
 from gluejobutils.s3 import s3_path_to_bucket_key, check_for_s3_file
 import os
+import re
 import sqlparse
 from s3fs import S3FileSystem
 
@@ -34,7 +35,7 @@ def check_temp_query(sql_query: str):
     Raises:
         ValueError
     """
-    if re.findall(r'["|\']__temp__["|\']', sql_query):
+    if re.findall(r'["|\']__temp__["|\']', sql_query.lower()):
         raise ValueError(
             "When querying a temporary database, __temp__ should not be wrapped in quotes"
         )
@@ -71,7 +72,8 @@ def replace_temp_database_name_reference(sql_query: str, database_name: str) -> 
     parsed = sqlparse.parse(clean_query(sql_query))
     new_query = []
     for query in parsed:
-        check_temp_query(query)
+        print(query)
+        check_temp_query(str(query))
         for word in str(query).strip().split(" "):
             if "__temp__." in word.lower():
                 word = word.lower().replace("__temp__.", f"{database_name}.")
