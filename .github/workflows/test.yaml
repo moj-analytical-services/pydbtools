@@ -1,4 +1,4 @@
-name: Build and run tests in container
+name: Run tests
 
 on: pull_request
 
@@ -19,6 +19,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install poetry
-          poetry config virtualenvs.create false \
-            && poetry install --no-interaction --no-ansi
+          poetry update
+          poetry install
           pytest -vv tests/test_sql_parse.py
