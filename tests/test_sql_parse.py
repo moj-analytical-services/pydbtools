@@ -1,6 +1,6 @@
 import pytest
 from pydbtools.create_temp_table import check_sql
-from pydbtools.utils import replace_temp_database_name_reference
+from pydbtools.utils import replace_temp_database_name_reference, check_temp_query
 
 sql1 = """
 with x as (SELECT __TEMP__.y.c1, db.tb.c2
@@ -100,16 +100,21 @@ def test_sql_parse(test_input: str, expected: bool):
         ),
         pytest.param(
             sql5,
-            " ".join(sql5.splitlines()).strip().replace("__temp__", "dbname") + ";",
+            "When querying a temporary database, __temp__ should not be wrapped in quotes",
             id="sql5",
         ),
         pytest.param(
             sql6,
-            " ".join(sql6.splitlines()).strip().replace("__temp__", "dbname", 1) + ";",
+            "When querying a temporary database, __temp__ should not be wrapped in quotes",
             id="sql6",
         ),
     ],
 )
 def test_replace_temp_database_name_reference(test_input: str, expected: bool):
-    sql = replace_temp_database_name_reference(test_input, "dbname")
-    assert sql == expected
+    if expected == "When querying a temporary database, __temp__ should not be wrapped in quotes":
+        with pytest.raises(ValueError) as e:
+            _ = replace_temp_database_name_reference(test_input, "dbname")
+        assert str(e.value) == expected
+    else:
+        sql = replace_temp_database_name_reference(test_input, "dbname")
+        assert sql == expected
