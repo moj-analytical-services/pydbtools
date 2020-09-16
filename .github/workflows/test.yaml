@@ -20,5 +20,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry
           poetry update
-          poetry install
           pytest -vv tests/test_sql_parse.py
