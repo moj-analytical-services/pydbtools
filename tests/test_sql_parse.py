@@ -111,7 +111,10 @@ def test_sql_parse(test_input: str, expected: bool):
     ],
 )
 def test_replace_temp_database_name_reference(test_input: str, expected: bool):
-    if expected == "When querying a temporary database, __temp__ should not be wrapped in quotes":
+    if (
+        expected
+        == "When querying a temporary database, __temp__ should not be wrapped in quotes"
+    ):
         with pytest.raises(ValueError) as e:
             _ = replace_temp_database_name_reference(test_input, "dbname")
         assert str(e.value) == expected
