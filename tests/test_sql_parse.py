@@ -105,7 +105,7 @@ def test_sql_parse(test_input: str, expected: bool):
         ),
         pytest.param(
             sql6,
-            "When querying a temporary database, __temp__ should not be wrapped in quotes",
+            " ".join(sql6.splitlines()).strip().replace("__temp__", "dbname", 1) + ";",
             id="sql6",
         ),
     ],

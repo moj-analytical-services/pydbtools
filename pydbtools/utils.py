@@ -35,7 +35,7 @@ def check_temp_query(sql_query: str):
     Raises:
         ValueError
     """
-    if re.findall(r'["|\']__temp__["|\']', sql_query.lower()):
+    if re.findall(r'["|\']__temp__["|\']\.', sql_query.lower()):
         raise ValueError(
             "When querying a temporary database, __temp__ should not be wrapped in quotes"
         )
