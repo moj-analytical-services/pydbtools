@@ -4,10 +4,10 @@ description = "The AWS SDK for Python"
 name = "boto3"
 optional = false
 python-versions = "*"
-version = "1.14.53"
+version = "1.15.1"
 
 [package.dependencies]
-botocore = ">=1.17.53,<1.18.0"
+botocore = ">=1.18.1,<1.19.0"
 jmespath = ">=0.7.1,<1.0.0"
 s3transfer = ">=0.3.0,<0.4.0"
 
@@ -17,24 +17,15 @@ description = "Low-level, data-driven core of boto 3."
 name = "botocore"
 optional = false
 python-versions = "*"
-version = "1.17.53"
+version = "1.18.1"
 
 [package.dependencies]
-docutils = ">=0.10,<0.16"
 jmespath = ">=0.7.1,<1.0.0"
 python-dateutil = ">=2.1,<3.0.0"
 
 [package.dependencies.urllib3]
 python = "<3.4.0 || >=3.5.0"
 version = ">=1.20,<1.26"
-
-[[package]]
-category = "main"
-description = "Docutils -- Python Documentation Utilities"
-name = "docutils"
-optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-version = "0.15.2"
 
 [[package]]
 category = "main"
@@ -50,7 +41,7 @@ description = "Python 2.7 utils for glue jobs"
 name = "gluejobutils"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "3.0.0"
+version = "3.1.1"
 
 [[package]]
 category = "main"
@@ -146,31 +137,26 @@ secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "pyOpenSSL (>=0
 socks = ["PySocks (>=1.5.6,<1.5.7 || >1.5.7,<2.0)"]
 
 [metadata]
-content-hash = "108b5db33f220336579516a015e7ecdf9288fa72828774d1a1fd55b24cff411f"
+content-hash = "a49fc9cb44134d92e4ccd88dbd9d769b310bef1ce5281fc3eab789f71bffa9d4"
 lock-version = "1.0"
 python-versions = "^3.5"
 
 [metadata.files]
 boto3 = [
-    {file = "boto3-1.14.53-py2.py3-none-any.whl", hash = "sha256:defd1aa0bbc8eb9c3b6aefb5060972447f73a4f1c3ba995ba28d6f0b6b9059dd"},
-    {file = "boto3-1.14.53.tar.gz", hash = "sha256:b240ac281de363e25a8e1a4c862559d6a056d98dcb9f487fc94d73c6f6599dfc"},
+    {file = "boto3-1.15.1-py2.py3-none-any.whl", hash = "sha256:888be45e289ba56c4e47cfae5d6b08f097bc981d077fbe6521a6d3dc7a4d757e"},
+    {file = "boto3-1.15.1.tar.gz", hash = "sha256:44073b1b1823ffc9edcf9027afbca908dad6bd5000f512ca73f929f6a604ae24"},
 ]
 botocore = [
-    {file = "botocore-1.17.53-py2.py3-none-any.whl", hash = "sha256:7e0272ceeb7747ed259a392e8d7b624cfd037085a8c59ef2b9f8916e7c556267"},
-    {file = "botocore-1.17.53.tar.gz", hash = "sha256:d37a83ac23257c85c48b74ab81173980234f8fc078e7a9d312d0ee7d057f90e6"},
-]
-docutils = [
-    {file = "docutils-0.15.2-py2-none-any.whl", hash = "sha256:9e4d7ecfc600058e07ba661411a2b7de2fd0fafa17d1a7f7361cd47b1175c827"},
-    {file = "docutils-0.15.2-py3-none-any.whl", hash = "sha256:6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0"},
-    {file = "docutils-0.15.2.tar.gz", hash = "sha256:a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"},
+    {file = "botocore-1.18.1-py2.py3-none-any.whl", hash = "sha256:d6bdf51c8880aa9974e6b61d2f7d9d1debe407287e2e9e60f36c789fe8ba6790"},
+    {file = "botocore-1.18.1.tar.gz", hash = "sha256:6bdf60281c2e80360fe904851a1a07df3dcfe066fe88dc7fba2b5e626ac05c8c"},
 ]
 fsspec = [
     {file = "fsspec-0.6.2-py3-none-any.whl", hash = "sha256:00ca67c62ae642f3bded2100dd431d151c1c5965c410bf10b12480bc8eb0a9f6"},
     {file = "fsspec-0.6.2.tar.gz", hash = "sha256:ffd7cd5ac32f36698097c3d78c2c433d4c12f7e4bce3a3a4036fd3491188046d"},
 ]
 gluejobutils = [
-    {file = "gluejobutils-3.0.0-py2.py3-none-any.whl", hash = "sha256:b8bb9065463637d9debe2bee423ca9c8e1562ab3e1d72983ff8f7d6676b15ea7"},
-    {file = "gluejobutils-3.0.0.tar.gz", hash = "sha256:62211314d8883b7fd0a7b7bca6732c325d150b530e6c0c4218b758f5daef8ee6"},
+    {file = "gluejobutils-3.1.1-py2.py3-none-any.whl", hash = "sha256:9c88c2a5be3e3e9e6263599ab919486c174d61edf597693260b6c6da05d749b6"},
+    {file = "gluejobutils-3.1.1.tar.gz", hash = "sha256:9b0eed9b444f446510a62603048a3fe0d46a8dec1608146dcdf30790850b0987"},
 ]
 jmespath = [
     {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},
