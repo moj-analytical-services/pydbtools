@@ -1,20 +1,21 @@
 [tool]
 [tool.poetry]
 name = "pydbtools"
-version = "1.0.3"
+version = "2.0.0"
 description = "A python package to query data via amazon athena and bring it into a pandas df"
 license = "MIT"
 authors = ["Karik Isichei <karik.isichei@digital.justice.gov.uk>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.7"
 boto3 = ">=1.7.4"
-gluejobutils = ">=v1.0.0"
+gluejobutils = ">=1.0.0"
 numpy = ">=1.16.1"
-pandas = "^0.23"
-s3fs = ">=0.2.2"
+pandas = "^1.0"
+s3fs = "^0.4"
 sqlparse = "^0.3.1"
+dataengineeringutils3 = "^1.1"
 poetry_version = ">=0.1.5"
 
 [tool.poetry.dev-dependencies]
