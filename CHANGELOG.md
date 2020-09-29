@@ -5,26 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.0.1 - 2020-09-21
+
+### Fixed
+- Pinned s3fs version to below 0.5.0 to avoid version conflicts with boto3 and botocore, caused by the addition of aiobotocore in 0.5.0.
+
 ## v2.0.0 - 2020-07-14
 
-### Changed
+### Changed
 - Changed target bucket for temporary files from Athena queries: now mojap-athena-query-dump rather than alpha-athena-query-dump
 
 ## v1.0.3 - 2019-09-19
 
-### Changed
+### Changed
 
 - Added a minor workaround to fix what previous patch tried to fix and failed. See [issue](https://github.com/moj-analytical-services/pydbtools/issues/10).
 
 ## v1.0.2 - 2019-09-17
 
-### Changed
+### Changed
 
 - Added a minor workaround to try and fix reading from [s3 issues](https://github.com/pandas-dev/pandas/issues/27528)
 
 ## v1.0.1 - 2019-06-18
 
-### Changed
+### Changed
 
 - Removed f-strings in code and made pyproject allow for python 3.5
 
