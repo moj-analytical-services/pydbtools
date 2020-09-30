@@ -47,7 +47,7 @@ def create_temp_table(
             credentials from the EC2. This is for dbtools which is the R wrapper that
             calls this package via reticulate and requires credentials to be refreshed
             via the EC2 instance (and therefore sets this to True) - this is not
-            necessary when using this in Python. Default is False.. Defaults to False.
+            necessary when using this in Python. Default is False.
         
         region_name (str, optional):
             Name of the AWS region you want to run queries on. Defaults to "eu-west-1".
