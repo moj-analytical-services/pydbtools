@@ -58,7 +58,7 @@ def clean_query(sql_query: str) -> str:
 
 def replace_temp_database_name_reference(sql_query: str, database_name: str) -> str:
     """
-    Replaces references to to the users temp database __temp__
+    Replaces references to the user's temp database __temp__
     with the database_name string provided.
 
     Args:
