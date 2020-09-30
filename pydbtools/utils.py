@@ -72,7 +72,6 @@ def replace_temp_database_name_reference(sql_query: str, database_name: str) -> 
     parsed = sqlparse.parse(clean_query(sql_query))
     new_query = []
     for query in parsed:
-        print(query)
         check_temp_query(str(query))
         for word in str(query).strip().split(" "):
             if "__temp__." in word.lower():
