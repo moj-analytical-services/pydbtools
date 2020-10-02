@@ -1,4 +1,4 @@
-from typing import Tuple, Literal
+from typing import Tuple
 
 import numpy as np
 
@@ -106,7 +106,7 @@ def get_database_name_from_userid(user_id: str) -> str:
 
 
 def get_boto_client(
-    client_name: Literal["athena", "sts"],
+    client_name: str,
     force_ec2: bool = False,
     region_name: str = "eu-west-1",
 ):
