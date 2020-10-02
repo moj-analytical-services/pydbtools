@@ -1,18 +1,17 @@
 import os
 import sqlparse
 
-from dataengineeringutils3.s3 import (
-    delete_s3_folder_contents
-)
+from dataengineeringutils3.s3 import delete_s3_folder_contents
 
 from pydbtools.utils import (
     temp_database_name_prefix,
     get_user_id_and_table_dir,
     get_database_name_from_userid,
-    clean_query
+    clean_query,
 )
 
 from pydbtools import get_athena_query_response
+
 
 def check_sql(sql_query: str):
     """
@@ -25,13 +24,14 @@ def check_sql(sql_query: str):
             raise ValueError("The sql statement must be a single select query")
         i += 1
 
-        
+
 def create_temp_table(
-        sql_query: str,
-        table_name: str,
-        timeout: int = None,
-        force_ec2: bool = False,
-        region_name: str = "eu-west-1"):
+    sql_query: str,
+    table_name: str,
+    timeout: int = None,
+    force_ec2: bool = False,
+    region_name: str = "eu-west-1",
+):
     """
     Create a table inside the database from create database
 
@@ -60,7 +60,7 @@ def create_temp_table(
     db_path = os.path.join(out_path, "__athena_temp_db__/")
     table_path = os.path.join(db_path, table_name)
     temp_db_name = get_database_name_from_userid(user_id)
-    
+
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
     _ = get_athena_query_response(
