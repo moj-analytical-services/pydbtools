@@ -22,7 +22,7 @@ def read_sql(
     If set to None (default) the query will wait indefinitely.
 
     convert_dates: Boolean specifying if date columns should be converted to datetimes. Default is True.
-    
+
     cols_as_str: Boolean specifying if the data returned should treat all columns as strings rather than
     casting the columns to the pandas equivalent data types of the table in Athena. Default is False.
     """
