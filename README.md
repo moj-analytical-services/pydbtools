@@ -143,6 +143,7 @@ Below is a table that explains what the conversion is from our data types to a p
 | boolean   | np.bool           |                                                                                         |
 | float     | np.float64        |                                                                                         |
 | double    | np.float64        |                                                                                         |
+| decimal    | np.float64        |                                                                                         |
 
 #### Notes:
 
