@@ -148,7 +148,7 @@ Below is a table that explains what the conversion is from our data types to a p
 ## Unit tests
 Unit tests run in unittest through Poetry. Run `poetry run python -m unittest` to activate them. If you've changed any dependencies, run `poetry update` first.
 
-The tests run against a test database stored on s3 in `alpha-dbtools-test-bucket`. The data in `tests/test_data_for_s3` isn't used directly in the tests. It's just in this repo so you can see what the tests are running against without having to look on AWS.
+The tests run against a test Glue database callled `dbtools`. They use data stored on s3 in `alpha-dbtools-test-bucket`.
 
 #### Notes:
 
