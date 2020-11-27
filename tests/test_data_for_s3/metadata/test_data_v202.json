@@ -1,0 +1,54 @@
+{
+    "$schema" : "https://raw.githubusercontent.com/moj-analytical-services/etl_manager/master/etl_manager/specs/table_schema.json",
+    "name": "test_data",
+    "description": "test data for dbtools unit tests",
+    "data_format": "json",
+    "location": "test_data/",
+    "columns": [
+        {
+            "name": "character_col",
+            "type": "character",
+            "description": "test character column"
+        },
+        {
+            "name": "int_col",
+            "type": "int",
+            "description": "test int column"
+        },
+        {
+            "name": "long_col",
+            "type": "long",
+            "description": "test long column"
+        },
+        {
+            "name": "date_col",
+            "type": "date",
+            "description": "test date column"
+        },
+                {
+            "name": "datetime_col",
+            "type": "datetime",
+            "description": "test datetime column"
+        },
+        {
+            "name": "boolean_col",
+            "type": "boolean",
+            "description": "test boolean column"
+        },
+        {
+            "name": "float_col",
+            "type": "float",
+            "description": "test float column"
+        },
+        {
+            "name": "double_col",
+            "type": "double",
+            "description": "test double column"
+        },
+        {
+            "name": "decimal_col",
+            "type": "decimal(5,3)",
+            "description": "test decimal column"
+        }
+    ]
+}

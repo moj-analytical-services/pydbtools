@@ -32,6 +32,7 @@ class ReadSqlTest(unittest.TestCase):
             "boolean_col",
             "float_col",
             "double_col",
+            "decimal_col"
         ]
         self.assertTrue(col_test)
 
@@ -70,3 +71,7 @@ class ReadSqlTest(unittest.TestCase):
         # double test
         self.assertTrue(df.double_col.dtype == np.dtype("float"))
         self.assertIsInstance(df.iloc[0]["double_col"], np.float64)
+
+        # decimal test
+        self.assertTrue(df.decimal_col.dtype == np.dtype("float"))
+        self.assertIsInstance(df.iloc[0]["decimal_col"], np.float64)
