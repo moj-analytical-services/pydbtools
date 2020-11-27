@@ -60,8 +60,8 @@ class ReadSqlTest(unittest.TestCase):
         )
 
         # boolean test
-        self.assertTrue(df.character_col.dtype == np.dtype("object"))
-        self.assertIsInstance(df.iloc[0]["boolean_col"], bool)
+        self.assertTrue(df.boolean_col.dtype == np.dtype("bool"))
+        self.assertIsInstance(df.iloc[0]["boolean_col"], np.bool_)
 
         # float test
         self.assertTrue(df.float_col.dtype == np.dtype("float"))

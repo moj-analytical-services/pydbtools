@@ -145,6 +145,11 @@ Below is a table that explains what the conversion is from our data types to a p
 | double    | np.float64        |                                                                                         |
 | decimal    | np.float64        |                                                                                         |
 
+## Unit tests
+Unit tests run in unittest through Poetry. Run `poetry run python -m unittest` to activate them. If you've changed any dependencies, run `poetry update` first.
+
+The tests run against a test database stored on s3 in `alpha-dbtools-test-bucket`. The data in `tests/test_data_for_s3` isn't used directly in the tests. It's just in this repo so you can see what the tests are running against without having to look on AWS.
+
 #### Notes:
 
 - Amazon Athena using a flavour of SQL called presto docs can be found [here](https://prestodb.io/docs/current/)
