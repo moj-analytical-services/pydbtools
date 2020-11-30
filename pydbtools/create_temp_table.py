@@ -77,7 +77,7 @@ def create_temp_table(
     CREATE TABLE {temp_db_name}.{table_name}
         WITH (
             format = 'Parquet',
-            parquet_format = 'SNAPPY',
+            parquet_compression  = 'SNAPPY',
             external_location = '{out_path}'
         )
     as {sql_query}
