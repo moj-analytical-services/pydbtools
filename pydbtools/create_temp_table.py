@@ -72,7 +72,7 @@ def create_temp_table(
 
     # Clear out table every time
     delete_s3_folder_contents(table_path)
-    print(temp_db_name, table_name, outpath)
+    print(temp_db_name, table_name, out_path)
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
         WITH (
