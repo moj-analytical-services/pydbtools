@@ -89,21 +89,8 @@ def replace_temp_database_name_reference(sql_query: str, database_name: str) -> 
 def get_user_id_and_table_dir(
     force_ec2: bool = False, region_name: str = "eu-west-1"
 ) -> Tuple[str, str]:
-    if force_ec2:
-        provider = InstanceMetadataProvider(
-            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
-        )
-        creds = provider.load().get_frozen_credentials()
-        sts_client = boto3.client(
-            "sts",
-            region_name=region_name,
-            aws_access_key_id=creds.access_key,
-            aws_secret_access_key=creds.secret_key,
-            aws_session_token=creds.token,
-        )
-    else:
-        sts_client = boto3.client("sts", region_name=region_name)
 
+    sts_client = get_boto_client("sts", force_ec2=force_ec2, region_name=region_name)
     sts_resp = sts_client.get_caller_identity()
     out_path = os.path.join("s3://", bucket, sts_resp["UserId"])
     if out_path[-1] != "/":
@@ -118,23 +105,28 @@ def get_database_name_from_userid(user_id: str) -> str:
     return unique_db_name
 
 
-def get_athena_client(force_ec2: bool = False, region_name: str = "eu-west-1"):
+def get_boto_client(
+    client_name: str,
+    force_ec2: bool = False,
+    region_name: str = "eu-west-1",
+):
+
     if force_ec2:
         provider = InstanceMetadataProvider(
             iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
         )
         creds = provider.load().get_frozen_credentials()
-        athena_client = boto3.client(
-            "athena",
+        client = boto3.client(
+            client_name,
             region_name=region_name,
             aws_access_key_id=creds.access_key,
             aws_secret_access_key=creds.secret_key,
             aws_session_token=creds.token,
         )
     else:
-        athena_client = boto3.client("athena", region_name=region_name)
+        client = boto3.client(client_name, region_name=region_name)
 
-    return athena_client
+    return client
 
 
 def get_file(s3_path: str, check_exists: bool = True):
