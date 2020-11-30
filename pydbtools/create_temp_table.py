@@ -72,15 +72,15 @@ def create_temp_table(
 
     # Clear out table every time
     delete_s3_folder_contents(table_path)
-
+    print(temp_db_name, table_name, outpath)
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
         WITH (
             format = 'Parquet',
-            orc_compression = 'SNAPPY',
-            external_location = '{out_path}',
+            parquet_format = 'SNAPPY',
+            external_location = '{out_path}'
         )
-    ({sql_query})
+    as {sql_query}
     """
 
     _ = get_athena_query_response(
