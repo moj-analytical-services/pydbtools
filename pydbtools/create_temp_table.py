@@ -10,7 +10,7 @@ from pydbtools.utils import (
     clean_query,
 )
 
-from pydbtools import get_athena_query_response
+from pydbtools.get_athena_query_response import get_athena_query_response
 
 
 def check_sql(sql_query: str):
