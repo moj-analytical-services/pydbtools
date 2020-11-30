@@ -80,7 +80,7 @@ def create_temp_table(
             orc_compression = 'SNAPPY',
             external_location = '{out_path}',
         )
-    {sql_query}
+    ({sql_query})
     """
 
     _ = get_athena_query_response(
