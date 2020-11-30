@@ -81,7 +81,7 @@ def create_temp_table(
             external_location = '{out_path}'
         )
     as {sql_query}
-    """
+
 
     _ = get_athena_query_response(
         sql_query=ctas_query,
