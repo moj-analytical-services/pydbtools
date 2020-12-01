@@ -143,6 +143,12 @@ Below is a table that explains what the conversion is from our data types to a p
 | boolean   | np.bool           |                                                                                         |
 | float     | np.float64        |                                                                                         |
 | double    | np.float64        |                                                                                         |
+| decimal    | np.float64        |                                                                                         |
+
+## Unit tests
+Unit tests run in unittest through Poetry. Run `poetry run python -m unittest` to activate them. If you've changed any dependencies, run `poetry update` first.
+
+The tests run against a test Glue database callled `dbtools`. They use data stored on s3 in `alpha-dbtools-test-bucket`.
 
 #### Notes:
 
