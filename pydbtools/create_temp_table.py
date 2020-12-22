@@ -72,6 +72,16 @@ def create_temp_table(
 
     # Clear out table every time
     delete_s3_folder_contents(table_path)
+    
+    drop_table_query(f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}")
+
+    _ = get_athena_query_response(
+        sql_query=drop_table_query,
+        timeout=None,
+        force_ec2=force_ec2,
+        region_name=region_name,
+    )
+
     print(
         f"Creating table {table_name}. To access table contents query __temp__.{table_name}"
     )
