@@ -38,17 +38,17 @@ def create_temp_table(
     Args:
         sql_query (str):
             The SQL table you want to create a temp table out of. Should be a table that starts with a WITH or SELECT clause.
-        
+
         table_name (str):
             The name of the temp table you wish to create
-        
+
         force_ec2 (bool, optional):
             Boolean specifying if the user wants to force boto to get the
             credentials from the EC2. This is for dbtools which is the R wrapper that
             calls this package via reticulate and requires credentials to be refreshed
             via the EC2 instance (and therefore sets this to True) - this is not
             necessary when using this in Python. Default is False.
-        
+
         region_name (str, optional):
             Name of the AWS region you want to run queries on. Defaults to "eu-west-1".
     """
@@ -72,7 +72,9 @@ def create_temp_table(
 
     # Clear out table every time
     delete_s3_folder_contents(table_path)
-    print(f"Creating table {table_name}. To access table contents query __temp__.{table_name}"
+    print(
+        f"Creating table {table_name}. To access table contents query __temp__.{table_name}"
+    )
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
         WITH (
@@ -82,7 +84,6 @@ def create_temp_table(
         )
     as {sql_query}
     """
-
 
     _ = get_athena_query_response(
         sql_query=ctas_query,
