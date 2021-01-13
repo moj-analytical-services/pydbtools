@@ -161,7 +161,9 @@ _athena_meta_conversions = {
     "float": {"etl_manager": "float", "pandas": "float"},
     "double": {"etl_manager": "double", "pandas": "float"},
     "string": {"etl_manager": "character", "pandas": "object"},
+    "decimal": {"etl_manager": "decimal", "pandas": "float"},
 }
+
 
 # Two functions below stolen and altered from here:
 # https://github.com/moj-analytical-services/dataengineeringutils/blob/metadata_conformance/dataengineeringutils/pd_metadata_conformance.py
