@@ -1,6 +1,7 @@
 import boto3
 import time
 import os
+import warnings
 
 from pydbtools.utils import (
     _athena_meta_conversions,
@@ -10,7 +11,6 @@ from pydbtools.utils import (
     replace_temp_database_name_reference,
 )
 
-
 def get_athena_query_response(
     sql_query: str,
     return_athena_types: bool = False,
@@ -19,6 +19,8 @@ def get_athena_query_response(
     region_name: str = "eu-west-1",
 ):
     """
+    [DEPRECATED] See start_query_execution_and_wait.
+
     Runs an SQL query against our Athena database and returns a tuple.
     The first argument is an S3 path to the resulting output and the second
     is a dictionary of meta data for the table.
@@ -30,9 +32,10 @@ def get_athena_query_response(
     meta data should be named after the athena types (True) or as our agnostic
     meta data types used in etl_manager (False). Default is False.
 
-    timeout: Integer specifying the number of seconds to wait before giving up
+    timeout: . Will raise warining if not None.
+    Integer specifying the number of seconds to wait before giving up
     on the Athena query. If set to None (default) the query will wait
-    indefinitely.
+    indefinitely. .
 
     force_ec2: Boolean specifying if the user wants to force boto to get the
     credentials from the EC2. This is for dbtools which is the R wrapper that
@@ -40,8 +43,18 @@ def get_athena_query_response(
     via the EC2 instance (and therefore sets this to True) - this is not
     necessary when using this in Python. Default is False.
     """
+    usage_warning = (
+        "This function is deprecated and will be removed "
+        "in future releases. Please use the "
+        "start_query_execution_and_wait function instead."
+    )
 
-    user_id, out_path = get_user_id_and_table_dir(force_ec2, region_name)
+    warnings.warn(usage_warning)
+    user_id, out_path = get_user_id_and_table_dir(
+        boto3_session=None,
+        force_ec2=force_ec2,
+        region_name=region_name
+    )
 
     temp_db_name = get_database_name_from_userid(user_id)
     sql_query = replace_temp_database_name_reference(sql_query, temp_db_name)
@@ -91,6 +104,7 @@ def get_athena_query_response(
         MaxResults=1,
     )
     s3_path = athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"]
+
     if return_athena_types:
         meta = [
             {"name": c["Name"], "type": c["Type"]}
