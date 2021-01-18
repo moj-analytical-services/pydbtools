@@ -11,6 +11,7 @@ from pydbtools.utils import (
     replace_temp_database_name_reference,
 )
 
+
 def get_athena_query_response(
     sql_query: str,
     return_athena_types: bool = False,
@@ -51,9 +52,7 @@ def get_athena_query_response(
 
     warnings.warn(usage_warning)
     user_id, out_path = get_user_id_and_table_dir(
-        boto3_session=None,
-        force_ec2=force_ec2,
-        region_name=region_name
+        boto3_session=None, force_ec2=force_ec2, region_name=region_name
     )
 
     temp_db_name = get_database_name_from_userid(user_id)

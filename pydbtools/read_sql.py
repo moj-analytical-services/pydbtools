@@ -9,8 +9,9 @@ from pydbtools.utils import (
     _pd_dtype_dict_from_metadata,
     get_file,
     get_boto_session,
-    get_default_args
+    get_default_args,
 )
+
 
 def read_sql(
     sql_query, timeout=None, convert_dates=True, cols_as_str=False, *args, **kwargs
@@ -68,10 +69,7 @@ def read_sql(
         df = pd.read_csv(f, dtype=dtype, parse_dates=parse_dates, *args, **kwargs)
 
     # Delete both the SQL query and the meta data
-    to_del = [
-        response["s3_path"],
-        response["s3_path"] + ".metadata"
-    ]
+    to_del = [response["s3_path"], response["s3_path"] + ".metadata"]
     wr.s3.delete_objects(to_del)
 
     return df

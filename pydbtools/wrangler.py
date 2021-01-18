@@ -19,7 +19,7 @@ from pydbtools.utils import (
 
 # Wrapper used to set parameters in the athena wrangler functions
 # before they are called
-def init_athena_params(func):
+def init_athena_params(func=None, *, allow_boto3_session=False):
     """
     Takes a wrangler athena function and sets the following:
     boto3_session and s3_output_path if exists in function param.
@@ -32,33 +32,44 @@ def init_athena_params(func):
     Returns:
         Similar function call but with pre-defined params.
     """
+    # Allows parameterisation of this wrapper fun
+    if func is None:
+        return functools.partial(
+            init_athena_params, allow_boto3_session=allow_boto3_session
+        )
 
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # Get the boto3 session
-        setup_defaults = get_default_args(get_boto_session)
-        setup_kwargs = {}
-        for k, v in setup_defaults.items():
-            setup_kwargs[k] = kwargs.pop(k, v)
-        boto3_session = get_boto_session(**setup_kwargs)
-
         # Get parameters from function and overwrite specific params
         sig = inspect.signature(func)
         argmap = sig.bind_partial(*args, **kwargs).arguments
 
-        if "boto3_session" in argmap:
-            warn_msg = (
-                "Warning parameter 'boto3_session' cannot be set. "
-                "Is defined by setting 'force_ec2' and 'region' params. "
-                "(Input boto3_session will be ignored)."
-            )
-            warnings.warn(warn_msg)
-        argmap["boto3_session"] = boto3_session
+        # If wrapper allows boto3 session being defined by user
+        # and it has been then do not create new boto3 session
+        # otherwise do
+        if allow_boto3_session and argmap.get("boto3_session"):
+            pass
+        else:
+            # Get the boto3 session
+            setup_defaults = get_default_args(get_boto_session)
+            setup_kwargs = {}
+            for k, v in setup_defaults.items():
+                setup_kwargs[k] = kwargs.pop(k, v)
+            boto3_session = get_boto_session(**setup_kwargs)
+
+            if "boto3_session" in argmap:
+                warn_msg = (
+                    "Warning parameter 'boto3_session' cannot be set. "
+                    "Is defined by setting 'force_ec2' and 'region' params. "
+                    "(Input boto3_session will be ignored)."
+                )
+                warnings.warn(warn_msg)
+            argmap["boto3_session"] = boto3_session
 
         # Check SQL for __temp__ keyword references and set s3 table path
         if ("s3_output" in argmap) or ("sql" in argmap):
             user_id, s3_output = get_user_id_and_table_dir(boto3_session)
-        
+
         # Set s3_output to predefined path otherwise skip
         if "s3_output" in sig.parameters:
             if "s3_output" in argmap:
@@ -67,7 +78,7 @@ def init_athena_params(func):
                     "Is automatically generated (input ignored)."
                 )
                 warnings.warn(warn_msg)
-            
+
             # Set s3 to default s3 path
             argmap["s3_output"] = s3_output
 
@@ -75,24 +86,22 @@ def init_athena_params(func):
         if "sql" in argmap:
             temp_db_name = get_database_name_from_userid(user_id)
             argmap["sql"] = replace_temp_database_name_reference(
-                argmap["sql"],
-                temp_db_name
+                argmap["sql"], temp_db_name
             )
 
         # Set database to None when not needed
-        if (
-            "database" in sig.parameters and
-            (argmap.get("database", "__temp__").lower() == "__temp__")
+        if "database" in sig.parameters and (
+            argmap.get("database", "__temp__").lower() == "__temp__"
         ):
-            if (
-                "ctas_approach" in sig.parameters and 
-                argmap.get("ctas_approach", True)
-            ):
+            if "ctas_approach" in sig.parameters and argmap.get("ctas_approach", True):
                 argmap["database"] = temp_db_name
+                create_temp_database(temp_db_name, boto3_session=boto3_session)
+
             else:
                 argmap["database"] = None
 
         return func(**argmap)
+
     return wrapper
 
 
@@ -111,6 +120,7 @@ stop_query_execution = init_athena_params(ath.stop_query_execution)
 wait_query = init_athena_params(ath.wait_query)
 
 
+@init_athena_params
 def start_query_execution_and_wait(sql, *args, **kwargs):
     """Calls start_query_execution followed by wait_query.
     *args and **kwargs are passed to start_query_execution
@@ -119,8 +129,11 @@ def start_query_execution_and_wait(sql, *args, **kwargs):
         sql (str): An SQL string. Which works with __TEMP__ references.
     """
 
-    query_execution_id = start_query_execution(sql, *args, **kwargs)
-    return wait_query(query_execution_id)
+    # Function wrapper is applied to top of function so we need
+    # to call the original unwrapped athena fun to ensure the wrapper fun
+    # is not called again
+    query_execution_id = ath.start_query_execution(sql, *args, **kwargs)
+    return ath.wait_query(query_execution_id, boto3_session=kwargs.get("boto3_session"))
 
 
 def check_sql(sql: str):
@@ -135,31 +148,30 @@ def check_sql(sql: str):
         i += 1
 
 
+@init_athena_params(allow_boto3_session=True)
 def create_temp_database(
-    temp_db_name:str = None,
+    temp_db_name: str = None,
+    boto3_session=None,
     force_ec2: bool = False,
-    region_name: str = "eu-west-1"
+    region_name: str = "eu-west-1",
 ):
-    if temp_db_name is None:
+    if temp_db_name is None or temp_db_name.lower().strip() == "__temp__":
         user_id, _ = get_user_id_and_table_dir(
-            boto3_session=None,
-            force_ec2=force_ec2,
-            region_name=region_name
+            boto3_session=boto3_session, force_ec2=force_ec2, region_name=region_name
         )
         temp_db_name = get_database_name_from_userid(user_id)
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
-    return start_query_execution_and_wait(
-        sql=create_db_query,
-        force_ec2=force_ec2,
-        region_name=region_name,
-    )
+    q_e_id = ath.start_query_execution(create_db_query, boto3_session=boto3_session)
+    return ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
+@init_athena_params
 def create_temp_table(
     sql: str,
     table_name: str,
+    boto3_session=None,
     force_ec2: bool = False,
     region_name: str = "eu-west-1",
 ):
@@ -187,31 +199,21 @@ def create_temp_table(
     check_sql(sql)
 
     # Create named stuff
-    user_id, out_path = get_user_id_and_table_dir(
-        boto3_session=None,
-        force_ec2=force_ec2,
-        region_name=region_name
-    )
+    user_id, out_path = get_user_id_and_table_dir(boto3_session=boto3_session)
     db_path = os.path.join(out_path, "__athena_temp_db__/")
     table_path = os.path.join(db_path, table_name)
     temp_db_name = get_database_name_from_userid(user_id)
 
-    _ = create_temp_database(
-        temp_db_name,
-        force_ec2=force_ec2,
-        region_name=region_name
-    )
+    _ = create_temp_database(temp_db_name, boto3_session)
 
     # Clear out table every time
-    wr.s3.delete_objects(table_path)
+    wr.s3.delete_objects(table_path, boto3_session=boto3_session)
 
     drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
 
-    _ = start_query_execution_and_wait(
-        sql=drop_table_query,
-        force_ec2=force_ec2,
-        region_name=region_name,
-    )
+    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
+
+    _ = ath.wait_query(q_e_id, boto3_session=boto3_session)
 
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
@@ -223,8 +225,6 @@ def create_temp_table(
     as {sql}
     """
 
-    _ = start_query_execution_and_wait(
-        sql=ctas_query,
-        force_ec2=force_ec2,
-        region_name=region_name,
-    )
+    q_e_id = ath.start_query_execution(ctas_query, boto3_session=boto3_session)
+
+    return ath.wait_query(q_e_id, boto3_session=boto3_session)

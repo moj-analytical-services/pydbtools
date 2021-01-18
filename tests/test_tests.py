@@ -32,7 +32,7 @@ class ReadSqlTest(unittest.TestCase):
             "boolean_col",
             "float_col",
             "double_col",
-            "decimal_col"
+            "decimal_col",
         ]
         self.assertTrue(col_test)
 

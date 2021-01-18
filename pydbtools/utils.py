@@ -93,16 +93,11 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
 
 
 def get_user_id_and_table_dir(
-    boto3_session = None,
-    force_ec2: bool = False,
-    region_name: str = "eu-west-1"
+    boto3_session=None, force_ec2: bool = False, region_name: str = "eu-west-1"
 ) -> Tuple[str, str]:
 
     if boto3_session is None:
-        boto3_session = get_boto_session(
-            force_ec2=force_ec2,
-            region_name=region_name
-        )
+        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
 
     sts_client = boto3_session.client("sts")
     sts_resp = sts_client.get_caller_identity()
@@ -120,12 +115,10 @@ def get_database_name_from_userid(user_id: str) -> str:
 
 
 def get_boto_session(
-    force_ec2: bool = False,
-    region_name: str = "eu-west-1",
+    force_ec2: bool = False, region_name: str = "eu-west-1",
 ):
-    kwargs = {
-        "region_name": region_name
-    }
+    print("Get boto session called")
+    kwargs = {"region_name": region_name}
     if force_ec2:
         provider = InstanceMetadataProvider(
             iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
@@ -140,7 +133,7 @@ def get_boto_session(
 
 def get_boto_client(
     client_name: str,
-    boto3_session = None,
+    boto3_session=None,
     force_ec2: bool = False,
     region_name: str = "eu-west-1",
 ):
