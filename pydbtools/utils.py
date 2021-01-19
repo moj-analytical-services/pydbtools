@@ -7,6 +7,7 @@ from s3fs import S3FileSystem
 import inspect
 import boto3
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
+import awswrangler as wr
 
 # pydbtools will create a new a new S3 object (then delete it post read). In the first call read
 # the cache is empty but then filled. If pydbtools is called again the cache is referenced and
