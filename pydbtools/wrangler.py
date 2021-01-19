@@ -227,4 +227,4 @@ def create_temp_table(
 
     q_e_id = ath.start_query_execution(ctas_query, boto3_session=boto3_session)
 
-    return ath.wait_query(q_e_id, boto3_session=boto3_session)
+    ath.wait_query(q_e_id, boto3_session=boto3_session)
