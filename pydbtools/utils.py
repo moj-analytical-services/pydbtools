@@ -117,7 +117,7 @@ def get_database_name_from_userid(user_id: str) -> str:
 def get_boto_session(
     force_ec2: bool = False, region_name: str = "eu-west-1",
 ):
-    print("Get boto session called")
+
     kwargs = {"region_name": region_name}
     if force_ec2:
         provider = InstanceMetadataProvider(
