@@ -7,6 +7,7 @@ from s3fs import S3FileSystem
 import inspect
 import boto3
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
+import awswrangler as wr
 
 # pydbtools will create a new a new S3 object (then delete it post read). In the first call read
 # the cache is empty but then filled. If pydbtools is called again the cache is referenced and
@@ -149,7 +150,7 @@ def get_file(s3_path: str, check_exists: bool = True):
     Returns an file using s3fs without caching objects (workaround for issue #10).
 
     s3_path: path to file in S3 e.g. s3://bucket/object/path.csv
-    check_exists: If True (default) will check for s3 file existance before returning file.
+    check_exists: If True (default) will check for s3 file existence before returning file.
     """
     b, k = s3_path.replace("s3://", "").split("/", 1)
     if check_exists:

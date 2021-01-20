@@ -1,4 +1,5 @@
 import pandas as pd
+import warnings
 from functools import wraps
 import awswrangler as wr
 
