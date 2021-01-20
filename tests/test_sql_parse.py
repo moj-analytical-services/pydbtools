@@ -1,5 +1,5 @@
 import pytest
-from pydbtools.create_temp_table import check_sql
+from pydbtools.wrangler import check_sql
 from pydbtools.utils import replace_temp_database_name_reference, check_temp_query
 
 sql1 = """
