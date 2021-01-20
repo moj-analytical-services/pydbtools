@@ -57,7 +57,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
                 setup_kwargs[k] = kwargs.pop(k, v)
             boto3_session = get_boto_session(**setup_kwargs)
 
-            if "boto3_session" in argmap:
+            if argmap.get("boto3_session") is not None:
                 warn_msg = (
                     "Warning parameter 'boto3_session' cannot be set. "
                     "Is defined by setting 'force_ec2' and 'region' params. "
@@ -72,7 +72,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
 
         # Set s3_output to predefined path otherwise skip
         if "s3_output" in sig.parameters:
-            if "s3_output" in argmap:
+            if argmap.get("s3_output") is not None:
                 warn_msg = (
                     "Warning parameter 's3_output' cannot be set. "
                     "Is automatically generated (input ignored)."
@@ -95,7 +95,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
         ):
             if "ctas_approach" in sig.parameters and argmap.get("ctas_approach", True):
                 argmap["database"] = temp_db_name
-                create_temp_database(temp_db_name, boto3_session=boto3_session)
+                _create_temp_database(temp_db_name, boto3_session=boto3_session)
 
             else:
                 argmap["database"] = None
@@ -147,9 +147,29 @@ def check_sql(sql: str):
             raise ValueError("The sql statement must be a single select query")
         i += 1
 
-
+# This is not necessary atm but incase future changes are made
+# I think it is better to create "public" and "private" method
+# where the public function is wrapped by init_athena_params
+# this wrapper also calls the private functnio to avoid the wrapper
+# calling itself
 @init_athena_params(allow_boto3_session=True)
 def create_temp_database(
+    temp_db_name: str = None,
+    boto3_session=None,
+    force_ec2: bool = False,
+    region_name: str = "eu-west-1",
+):
+    out = _create_temp_database(
+        temp_db_name=temp_db_name,
+        boto3_session=boto3_session,
+        force_ec2=force_ec2,
+        region_name=region_name,
+    )
+    
+    return out
+
+
+def _create_temp_database(
     temp_db_name: str = None,
     boto3_session=None,
     force_ec2: bool = False,
