@@ -59,7 +59,9 @@ def get_athena_query_response(
     sql_query = replace_temp_database_name_reference(sql_query, temp_db_name)
 
     out_path = os.path.join(out_path, "__athena_query_dump__/")
-    athena_client = get_boto_client(client_name="athena", force_ec2=force_ec2, region_name=region_name)
+    athena_client = get_boto_client(
+        client_name="athena", force_ec2=force_ec2, region_name=region_name
+    )
 
     # Run the athena query
     response = athena_client.start_query_execution(
