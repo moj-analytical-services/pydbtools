@@ -104,7 +104,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
                 "ctas_approach", sig.parameters["ctas_approach"].default
             ):
                 argmap["database"] = temp_db_name
-                _create_temp_database(temp_db_name, boto3_session=boto3_session)
+                _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
             elif argmap.get("database", "").lower() == "__temp__":
                 argmap["database"] = temp_db_name
             else:
@@ -161,7 +161,7 @@ def check_sql(sql: str):
 # This is not necessary atm but incase future changes are made
 #  I think it is better to create "public" and "private" method
 # where the public function is wrapped by init_athena_params
-# this wrapper also calls the private functnio to avoid the wrapper
+# this wrapper also calls the private function to avoid the wrapper
 # calling itself
 @init_athena_params(allow_boto3_session=True)
 def create_temp_database(
@@ -170,14 +170,12 @@ def create_temp_database(
     force_ec2: bool = False,
     region_name: str = "eu-west-1",
 ):
-    out = _create_temp_database(
+    _ = _create_temp_database(
         temp_db_name=temp_db_name,
         boto3_session=boto3_session,
         force_ec2=force_ec2,
         region_name=region_name,
     )
-
-    return out
 
 
 def _create_temp_database(

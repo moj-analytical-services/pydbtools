@@ -1,12 +1,7 @@
-import os
-
-import boto3
-from moto import mock_s3
 import pytest
 
 from pydbtools.wrangler import (
     init_athena_params,
-    get_boto_session,
 )
 
 
@@ -56,7 +51,7 @@ def fun_with_sql_db_s3_ctas(
     boto3_session=None,
     database=None,
     s3_output=None,
-    ctas_approach=False,
+    ctas_approach=None,
     **kwargs,
 ):
     return locals()
