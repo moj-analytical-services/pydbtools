@@ -44,6 +44,11 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
         sig = inspect.signature(func)
         argmap = sig.bind_partial(*args, **kwargs).arguments
 
+        # Create a db flag
+        database_flag = "database" in sig.parameters and (
+            argmap.get("database", "__temp__").lower() == "__temp__"
+        )
+
         # If wrapper allows boto3 session being defined by user
         # and it has been then do not create new boto3 session
         # otherwise do
@@ -66,9 +71,14 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
                 warnings.warn(warn_msg)
             argmap["boto3_session"] = boto3_session
 
-        # Check SQL for __temp__ keyword references and set s3 table path
-        if ("s3_output" in argmap) or ("sql" in argmap):
+        # Set s3 table path and get temp_db_name
+        if (
+            ("s3_output" in sig.parameters)
+            or ("sql" in sig.parameters)
+            or database_flag
+        ):
             user_id, s3_output = get_user_id_and_table_dir(boto3_session)
+            temp_db_name = get_database_name_from_userid(user_id)
 
         # Set s3_output to predefined path otherwise skip
         if "s3_output" in sig.parameters:
@@ -84,19 +94,19 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
 
         # Fix sql before it is passed to athena
         if "sql" in argmap:
-            temp_db_name = get_database_name_from_userid(user_id)
             argmap["sql"] = replace_temp_database_name_reference(
                 argmap["sql"], temp_db_name
             )
 
-        # Set database to None when not needed
-        if "database" in sig.parameters and (
-            argmap.get("database", "__temp__").lower() == "__temp__"
-        ):
-            if "ctas_approach" in sig.parameters and argmap.get("ctas_approach", True):
+        # Set database to None or set to keyword temp when not needed
+        if database_flag:
+            if "ctas_approach" in sig.parameters and argmap.get(
+                "ctas_approach", sig.parameters["ctas_approach"].default
+            ):
                 argmap["database"] = temp_db_name
                 _create_temp_database(temp_db_name, boto3_session=boto3_session)
-
+            elif argmap.get("database", "").lower() == "__temp__":
+                argmap["database"] = temp_db_name
             else:
                 argmap["database"] = None
 
@@ -147,8 +157,9 @@ def check_sql(sql: str):
             raise ValueError("The sql statement must be a single select query")
         i += 1
 
+
 # This is not necessary atm but incase future changes are made
-# I think it is better to create "public" and "private" method
+#  I think it is better to create "public" and "private" method
 # where the public function is wrapped by init_athena_params
 # this wrapper also calls the private functnio to avoid the wrapper
 # calling itself
@@ -165,7 +176,7 @@ def create_temp_database(
         force_ec2=force_ec2,
         region_name=region_name,
     )
-    
+
     return out
 
 

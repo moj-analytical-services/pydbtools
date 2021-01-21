@@ -1,14 +1,20 @@
 """
 Testing DatabaseMeta, TableMeta
 """
-
+import pytest
 import unittest
 import numpy as np
 import pandas as pd
 
 import pydbtools as pydb
 
+skip_msg = (
+    "Only testable with access to dbtools database. "
+    "This test is also testing deprecated code so skipping."
+)
 
+
+@pytest.mark.skip(reason=skip_msg)
 class ReadSqlTest(unittest.TestCase):
     """
     Test packages read_sql function works
