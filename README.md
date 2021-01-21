@@ -12,6 +12,28 @@ pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtool
 pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtools@v3.0.0"
 ```
 
+## Quickstart guide
+
+### Read an SQL Athena query into a pandas dataframe
+
+```python
+import pydbtools as pydb
+df = pydb.read_sql("SELECT * from a_database.table LIMIT 10")
+```
+
+### Run a query in Athena
+
+```python
+response = pydb.start_query_execution_and_wait("CREATE DATABASE IF NOT EXISTS my_test_database")
+```
+
+### Create a temporary table to do further separate SQL queries on later
+
+```python
+pydb.create_temp_table("SELECT a_col, count(*) as n FROM a_database.table GROUP BY a_col", table_name="temp_table_1")
+df = pydb.read_sql_query("SELECT * FROM __temp__.temp_table_1 WHERE n < 10")
+```
+
 ## Introduction
 
 This package is a wrapper for [awswrangler](https://aws-data-wrangler.readthedocs.io/en/2.3.0/what.html) that which presets/defines some of the input parameters to the athena module functions to align with our platform setup. See the [awswrangler API reference documentation for Athena](https://aws-data-wrangler.readthedocs.io/en/2.3.0/api.html#amazon-athena) to see what functions you can call from pydbtools.
@@ -68,7 +90,7 @@ df = pydb.read_sql_query("SELECT * FROM __temp__.temp_table_1 WHERE n < 10")
 
 ### More advanced usage
 
-Get the actual name for your temp database, create your temp db then delete it using awswrangler (not awsrangler will raise an error if the database does not exist)
+Get the actual name for your temp database, create your temp db then delete it using awswrangler (note: `awswrangler` will raise an error if the database does not exist)
 
 ```python
 import awswrangler as wr
