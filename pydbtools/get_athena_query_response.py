@@ -1,15 +1,27 @@
 import boto3
 import time
 import os
+import warnings
 
-from pydbtools.utils import _athena_meta_conversions
-from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
+from pydbtools.utils import (
+    _athena_meta_conversions,
+    get_user_id_and_table_dir,
+    get_boto_client,
+    get_database_name_from_userid,
+    replace_temp_database_name_reference,
+)
 
 
 def get_athena_query_response(
-    sql_query, return_athena_types=False, timeout=None, force_ec2=False
+    sql_query: str,
+    return_athena_types: bool = False,
+    timeout: int = None,
+    force_ec2: bool = False,
+    region_name: str = "eu-west-1",
 ):
     """
+    [DEPRECATED] See start_query_execution_and_wait.
+
     Runs an SQL query against our Athena database and returns a tuple.
     The first argument is an S3 path to the resulting output and the second
     is a dictionary of meta data for the table.
@@ -21,9 +33,10 @@ def get_athena_query_response(
     meta data should be named after the athena types (True) or as our agnostic
     meta data types used in etl_manager (False). Default is False.
 
-    timeout: Integer specifying the number of seconds to wait before giving up
+    timeout: . Will raise warining if not None.
+    Integer specifying the number of seconds to wait before giving up
     on the Athena query. If set to None (default) the query will wait
-    indefinitely.
+    indefinitely. .
 
     force_ec2: Boolean specifying if the user wants to force boto to get the
     credentials from the EC2. This is for dbtools which is the R wrapper that
@@ -31,39 +44,24 @@ def get_athena_query_response(
     via the EC2 instance (and therefore sets this to True) - this is not
     necessary when using this in Python. Default is False.
     """
+    usage_warning = (
+        "This function is deprecated and will be removed "
+        "in future releases. Please use the "
+        "start_query_execution_and_wait function instead."
+    )
 
-    # Get role specific path for athena output
-    bucket = "mojap-athena-query-dump"
-    rn = "eu-west-1"
+    warnings.warn(usage_warning)
+    user_id, out_path = get_user_id_and_table_dir(
+        boto3_session=None, force_ec2=force_ec2, region_name=region_name
+    )
 
-    if force_ec2:
-        provider = InstanceMetadataProvider(
-            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
-        )
-        creds = provider.load().get_frozen_credentials()
-        sts_client = boto3.client(
-            "sts",
-            region_name=rn,
-            aws_access_key_id=creds.access_key,
-            aws_secret_access_key=creds.secret_key,
-            aws_session_token=creds.token,
-        )
-        athena_client = boto3.client(
-            "athena",
-            region_name=rn,
-            aws_access_key_id=creds.access_key,
-            aws_secret_access_key=creds.secret_key,
-            aws_session_token=creds.token,
-        )
-    else:
-        sts_client = boto3.client("sts", region_name=rn)
-        athena_client = athena_client = boto3.client("athena", region_name=rn)
+    temp_db_name = get_database_name_from_userid(user_id)
+    sql_query = replace_temp_database_name_reference(sql_query, temp_db_name)
 
-    sts_resp = sts_client.get_caller_identity()
-    out_path = os.path.join("s3://", bucket, sts_resp["UserId"], "__athena_temp__/")
-
-    if out_path[-1] != "/":
-        out_path += "/"
+    out_path = os.path.join(out_path, "__athena_query_dump__/")
+    athena_client = get_boto_client(
+        client_name="athena", force_ec2=force_ec2, region_name=region_name
+    )
 
     # Run the athena query
     response = athena_client.start_query_execution(
@@ -107,6 +105,7 @@ def get_athena_query_response(
         MaxResults=1,
     )
     s3_path = athena_status["QueryExecution"]["ResultConfiguration"]["OutputLocation"]
+
     if return_athena_types:
         meta = [
             {"name": c["Name"], "type": c["Type"]}

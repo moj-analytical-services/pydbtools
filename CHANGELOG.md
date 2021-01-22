@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v3.0.0 - 2021-01-26
+
+### Changed
+- `pydbtools` now acts as a wrapper for the athena module in awswrangler
+- Previous functions `get_athena_query_response` and `read_sql` are now deprecated (but still currently work with this release. later releases may remove them).
+- Allows users to create temporary tables that are stored in a database aliased by the name `__temp__`. SQL queries will replace any reference to `__temp__` with the real database name before the call.
+
+
 ## v2.0.2 - 2020-11-26
 
 ### Fixed
