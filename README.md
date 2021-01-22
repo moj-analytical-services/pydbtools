@@ -5,10 +5,10 @@
 > Requires a pip release above 20.
 
 ```bash
-pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtools"
+## To install from pypi
+pip install pydbtools
 
-## Or install a specific release
-
+## Or install from git with a specific release
 pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtools@v3.0.0"
 ```
 
