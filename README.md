@@ -18,7 +18,7 @@ pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtool
 
 ```python
 import pydbtools as pydb
-df = pydb.read_sql("SELECT * from a_database.table LIMIT 10")
+df = pydb.read_sql_query("SELECT * from a_database.table LIMIT 10")
 ```
 
 ### Run a query in Athena
