@@ -114,7 +114,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
                 argmap["database"] = temp_db_name
             else:
                 argmap["database"] = None
-
+        logger.debug(f"Modifying function {func.__name__}")
         logger.debug(pprint.pprint(dict(argmap)))
         return func(**argmap)
 
