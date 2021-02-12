@@ -3,6 +3,8 @@ import awswrangler.athena as ath
 import os
 import sqlparse
 import warnings
+import logging
+import pprint
 
 import inspect
 import functools
@@ -16,6 +18,9 @@ from pydbtools.utils import (
     get_boto_session,
     replace_temp_database_name_reference,
 )
+
+
+logger = logging.getLogger(__name__)
 
 # Wrapper used to set parameters in the athena wrangler functions
 # before they are called
@@ -110,6 +115,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
             else:
                 argmap["database"] = None
 
+        logger.debug(pprint.pprint(dict(argmap)))
         return func(**argmap)
 
     return wrapper
