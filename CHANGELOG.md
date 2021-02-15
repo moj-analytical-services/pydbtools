@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v3.0.1 - 2021-02-12
+
+### Changed
+- The `wrangler.py` module now has logging.  To observe the arguments and sql queries being run, turn on logging at DEBUG level using e.g.
+
+```
+import logging
+logging.basicConfig()
+logging.getLogger("pydbtools").setLevel(logging.DEBUG)
+```
 ## v3.0.0 - 2021-01-26
 
 ### Changed
