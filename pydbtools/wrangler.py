@@ -31,7 +31,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
 
     Args:
         func (Callable): An function from wr.athena that requires
-        boto3_session. If the func has an s3_output this is also 
+        boto3_session. If the func has an s3_output this is also
         standardised.
 
     Returns:
@@ -115,7 +115,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
             else:
                 argmap["database"] = None
         logger.debug(f"Modifying function {func.__name__}")
-        logger.debug(pprint.pprint(dict(argmap)))
+        logger.debug(pprint.pformat(dict(argmap)))
         return func(**argmap)
 
     return wrapper
