@@ -1,8 +1,6 @@
 import pytest
 
-from pydbtools.wrangler import (
-    init_athena_params,
-)
+from pydbtools.wrangler import init_athena_params
 
 
 def mock_get_user_id_and_table_dir(

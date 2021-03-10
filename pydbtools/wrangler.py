@@ -98,10 +98,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):
             argmap["s3_output"] = s3_output
 
         # Set ctas_approach to False if not set
-        if (
-            "ctas_approach" in sig.parameters
-            and argmap.get("ctas_approach") is None
-        ):
+        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
             argmap["ctas_approach"] = False
 
         # Fix sql before it is passed to athena
