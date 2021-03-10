@@ -164,3 +164,5 @@ def test_init_athena_params(
         assert isinstance(out.get("boto3_session"), dict)
         assert out.get("s3_output") == "s3://dummy/path/"
         assert out["database"] == returned_db
+        if fun.__name__ == "fun_with_sql_db_s3_ctas":
+            assert out["ctas_approach"] == fun_params.get("ctas_approach", False)

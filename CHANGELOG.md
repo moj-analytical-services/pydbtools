@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v3.1.0 - 2021-03-10
+
+### Changed
+- If left unspecified `ctas_approach` is set to `False` (instead of `True` which is the default behaviour for `awswrangler`). This is to address on going issues we are finding with ctas_approach:
+
+- [this pydbtools issue](https://github.com/moj-analytical-services/pydbtools/issues/41)
+- [this awswrangler issue](https://github.com/awslabs/aws-data-wrangler/issues/592)
+
 ## v3.0.1 - 2021-02-12
 
 ### Changed

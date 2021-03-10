@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "pydbtools"
-version = "3.0.1"
+version = "3.1.0"
 description = "A python package to query data via amazon athena and bring it into a pandas df"
 license = "MIT"
 authors = ["Karik Isichei <karik.isichei@digital.justice.gov.uk>"]
