@@ -26,6 +26,6 @@ jobs:
           --statistics
       - name: Lint YAML files with yamllint
         run: >
-          yamllint . -d "{extends: default, rules: {line-length:
+          yamllint . -d "{extends: default, ignore: .github/, rules: {line-length:
           {allow-non-breakable-words: true, allow-non-breakable-inline-mappings:
           true}}}" --no-warnings
