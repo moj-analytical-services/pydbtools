@@ -126,9 +126,9 @@ def test_replace_temp_database_name_reference(test_input: str, expected: bool):
 
 
 def test_comment_removal_fixes_sql_type(sql_dict):
-    
+
     test_sql = sql_dict["buggy"]
-    stmt = sqlparse.parse(clean_query(test_sql), )[0]
+    stmt = sqlparse.parse(clean_query(test_sql),)[0]
     assertion_msg = (
         "This is just testing a known error with SQL parser. "
         "If this test fails and get_type() returns 'SELECT'. "
@@ -137,5 +137,5 @@ def test_comment_removal_fixes_sql_type(sql_dict):
     assert stmt.get_type() == "UNKNOWN", assertion_msg
 
     opts = {"strip_comments": True}
-    stmt = sqlparse.parse(clean_query(test_sql, opts), )[0]
+    stmt = sqlparse.parse(clean_query(test_sql, opts),)[0]
     assert stmt.get_type() == "SELECT"

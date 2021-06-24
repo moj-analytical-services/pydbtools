@@ -1,5 +1,6 @@
 import pytest
 import os
+
 # Get all SQL files in a dict
 @pytest.fixture(scope="module")
 def sql_dict():
