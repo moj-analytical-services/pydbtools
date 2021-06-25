@@ -48,7 +48,7 @@ def check_temp_query(sql: str):
         )
 
 
-def clean_query(sql: str) -> str:
+def clean_query(sql: str, fmt_opts: dict = None) -> str:
     """
     removes trailing whitespace, newlines and final
     semicolon from sql for use with
@@ -56,11 +56,15 @@ def clean_query(sql: str) -> str:
 
     Args:
         sql (str): The raw SQL query
-
+        fmt_opts (dict): Dictionary of params to pass to sqlparse.format.
+        If None then sqlparse.format is not called.
     Returns:
         str: The cleaned SQL query
     """
-    return " ".join(sql.splitlines()).strip().rstrip(";")
+    sql = " ".join(sql.splitlines()).strip().rstrip(";")
+    if fmt_opts:
+        sql = sqlparse.format(sql, **fmt_opts)
+    return sql
 
 
 def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
@@ -76,6 +80,7 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
         str: The new SQL query which is sent to Athena
     """
     # check query is valid and clean
+
     parsed = sqlparse.parse(clean_query(sql))
     new_query = []
     for query in parsed:
