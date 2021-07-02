@@ -4,7 +4,7 @@ from pydbtools.wrangler import init_athena_params
 
 
 def mock_get_user_id_and_table_dir(
-    boto3_session=None, force_ec2: bool = False, region_name: str = "eu-west-1"
+    boto3_session=None, force_ec2: bool = False, region_name: str = None
 ):
     if isinstance(boto3_session, dict) and "events" in boto3_session:
         boto3_session["events"].append("get_user_id_and_table_dir")
@@ -15,7 +15,7 @@ def mock_create_temp_database(
     temp_db_name: str = None,
     boto3_session=None,
     force_ec2: bool = False,
-    region_name: str = "eu-west-1",
+    region_name: str = None,
 ):
     if isinstance(boto3_session, dict) and "events" in boto3_session:
         boto3_session["events"].append(f"_create_temp_database({temp_db_name})")

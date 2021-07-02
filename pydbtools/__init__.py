@@ -1,7 +1,4 @@
-from .read_sql import read_sql
-from .get_athena_query_response import get_athena_query_response
-
-from .wrangler import (
+from ._wrangler import (
     create_temp_table,
     read_sql_query,
     read_sql_table,
@@ -18,6 +15,11 @@ from .wrangler import (
     start_query_execution_and_wait,
     create_temp_table,
     create_temp_database,
+)
+
+from ._sql_render import (
+    read_sql_file,
+    render_sql_template,
 )
 
 import poetry_version
