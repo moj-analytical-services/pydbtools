@@ -1,7 +1,7 @@
 import pytest
 import sqlparse
 
-from pydbtools.wrangler import check_sql
+from pydbtools._wrangler import check_sql
 from pydbtools.utils import replace_temp_database_name_reference, clean_query
 
 sql1 = """

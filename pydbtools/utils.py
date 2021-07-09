@@ -3,18 +3,10 @@ import numpy as np
 import os
 import re
 import sqlparse
-from s3fs import S3FileSystem
 import inspect
 import boto3
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
 import awswrangler as wr
-
-# pydbtools will create a new a new S3 object (then delete it post read). In the first call read
-# the cache is empty but then filled. If pydbtools is called again the cache is referenced and
-# you get an NoFileError.
-# Setting cachable to false fixes this. cachable is class object from fsspec.AbstractFileSystem
-# which S3FileSystem inherits.
-S3FileSystem.cachable = False
 
 # Set pydbtool params - if you were so inclined to change them
 bucket = "mojap-athena-query-dump"

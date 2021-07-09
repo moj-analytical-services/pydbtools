@@ -1,6 +1,6 @@
 import pytest
 
-from pydbtools.wrangler import init_athena_params
+from pydbtools._wrangler import init_athena_params
 
 
 def mock_get_user_id_and_table_dir(
@@ -135,16 +135,16 @@ def fun_with_sql_db_s3_ctas(
 def test_init_athena_params(
     fun_params, fun, expected_events, expect_warns, returned_db, monkeypatch
 ):
-    monkeypatch.setattr("pydbtools.wrangler.get_boto_session", get_empty_boto_log)
+    monkeypatch.setattr("pydbtools._wrangler.get_boto_session", get_empty_boto_log)
     monkeypatch.setattr(
-        "pydbtools.wrangler.get_user_id_and_table_dir", mock_get_user_id_and_table_dir
+        "pydbtools._wrangler.get_user_id_and_table_dir", mock_get_user_id_and_table_dir
     )
     monkeypatch.setattr(
-        "pydbtools.wrangler.get_database_name_from_userid",
+        "pydbtools._wrangler.get_database_name_from_userid",
         lambda user_id: "mojap_de_temp_pytest",
     )
     monkeypatch.setattr(
-        "pydbtools.wrangler._create_temp_database", mock_create_temp_database
+        "pydbtools._wrangler._create_temp_database", mock_create_temp_database
     )
 
     if expect_warns:
