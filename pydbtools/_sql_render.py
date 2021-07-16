@@ -1,8 +1,9 @@
 from jinja2 import Template
 
-def read_sql_file(filepath: str, jinja_args: dict = None, **kwargs) -> str:
+
+def get_sql_from_file(filepath: str, jinja_args: dict = None, **kwargs) -> str:
     """
-    Read an SQL file and inject arguments with Jinja (if given params).
+    Read in an SQL file and inject arguments with Jinja (if given params).
     Returns the SQL as a str.
 
     Args:
@@ -19,7 +20,6 @@ def read_sql_file(filepath: str, jinja_args: dict = None, **kwargs) -> str:
     return sql
 
 
-
 def render_sql_template(sql: str, jinja_args: dict) -> str:
     """
     Takes a SQL file templated with Jinja and then injects arguments.
@@ -33,23 +33,3 @@ def render_sql_template(sql: str, jinja_args: dict) -> str:
         str: SQL string that has args rendered into it
     """
     return Template(sql).render(**jinja_args)
-
-
-def render_sql_file(sql_file: str, args: dict) -> str:
-    """
-    Takes a SQL file templated with Jinja and then injects arguments.
-    Returns the injected SQL.
-
-    Args:
-        sql_file (str): Path to SQL file
-        args (dict): Arguments that is referenced in the SQL file
-
-    Returns:
-        str: SQL string that has args rendered into it
-    """
-    with open(sql_file) as f:
-        filelines = "".join(f.readlines())
-
-    tm = Template(filelines)
-    sql = tm.render(**args)
-    return sql

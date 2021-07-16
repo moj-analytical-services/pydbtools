@@ -18,7 +18,7 @@ from ._wrangler import (
 )
 
 from ._sql_render import (
-    read_sql_file,
+    get_sql_from_file,
     render_sql_template,
 )
 

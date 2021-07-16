@@ -1,5 +1,6 @@
 import toml
 
+
 def test_set_module_values():
     import pydbtools as pydb
 
@@ -21,6 +22,7 @@ def test_set_module_values():
 
 def test_pyproject_toml_matches_version():
     import pydbtools as pydb
+
     with open("pyproject.toml") as f:
         proj = toml.load(f)
     assert pydb.__version__ == proj["tool"]["poetry"]["version"]

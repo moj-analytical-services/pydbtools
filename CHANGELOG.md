@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
-- Jinja templating to SQL see `pydbtools.render_sql`.
-- Read SQL function that takes an SQL file and returns it as a string (with Jinja arguments if provided) see `pydbtools.read_sql_file`.
+- Jinja templating to SQL see `pydbtools.render_sql_template`.
+- Read SQL function that takes an SQL file and returns it as a string (with Jinja arguments if provided) see `pydbtools.get_sql_from_file`.
 
 ## Changed
 
