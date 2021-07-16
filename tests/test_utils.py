@@ -1,3 +1,4 @@
+import toml
 
 def test_set_module_values():
     import pydbtools as pydb
@@ -16,3 +17,10 @@ def test_set_module_values():
     assert pydb.utils.aws_default_region == "eu-west-2"
 
     assert pydb.utils.get_database_name_from_userid("bob") == "test_bob"
+
+
+def test_pyproject_toml_matches_version():
+    import pydbtools as pydb
+    with open("pyproject.toml") as f:
+        proj = toml.load(f)
+    assert pydb.__version__ == proj["tool"]["poetry"]["version"]

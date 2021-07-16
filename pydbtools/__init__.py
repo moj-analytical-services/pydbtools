@@ -22,6 +22,4 @@ from ._sql_render import (
     render_sql_template,
 )
 
-import poetry_version
-
-__version__ = poetry_version.extract(source_file=__file__)
+__version__ = "4.0.0"
