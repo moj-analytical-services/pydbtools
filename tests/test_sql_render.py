@@ -3,7 +3,10 @@ import pydbtools as pydb
 
 def test_basic_get_sql_from_file():
 
-    expected = "SELECT *\n" "FROM db.table\n" "WHERE something = 'something else'\n"
+    expected = (
+        "SELECT *\n" "FROM db.table\n"
+        "WHERE something = 'something else'\n"
+    )
     actual = pydb.get_sql_from_file("tests/data/basic.sql")
     assert expected == actual
 

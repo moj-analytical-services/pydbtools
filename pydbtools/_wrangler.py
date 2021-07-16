@@ -10,7 +10,6 @@ import inspect
 import functools
 
 from pydbtools.utils import (
-    temp_database_name_prefix,
     get_user_id_and_table_dir,
     get_database_name_from_userid,
     clean_query,
@@ -23,9 +22,10 @@ from pydbtools.utils import (
 
 logger = logging.getLogger(__name__)
 
+
 # Wrapper used to set parameters in the athena wrangler functions
 # before they are called
-def init_athena_params(func=None, *, allow_boto3_session=False):
+def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
     """
     Takes a wrangler athena function and sets the following:
     boto3_session and s3_output_path if exists in function param.
@@ -222,7 +222,8 @@ def create_temp_table(
 
     Args:
         sql (str):
-            The SQL table you want to create a temp table out of. Should be a table that starts with a WITH or SELECT clause.
+            The SQL table you want to create a temp table out of. Should
+            be a table that starts with a WITH or SELECT clause.
 
         table_name (str):
             The name of the temp table you wish to create

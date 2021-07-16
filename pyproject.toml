@@ -16,6 +16,7 @@ Jinja2 = ""
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4"
+toml = ""
 
 [build-system]
 requires = ["poetry>=0.12"]

@@ -1,12 +1,10 @@
 from typing import Tuple
-import numpy as np
 import os
 import re
 import sqlparse
 import inspect
 import boto3
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
-import awswrangler as wr
 
 # Set pydbtool params - if you were so inclined to change them
 bucket = "mojap-athena-query-dump"
@@ -45,7 +43,8 @@ def check_temp_query(sql: str):
     """
     if re.findall(r'["|\']__temp__["|\']\.', sql.lower()):
         raise ValueError(
-            "When querying a temporary database, __temp__ should not be wrapped in quotes"
+            "When querying a temporary database, "
+            "__temp__ should not be wrapped in quotes"
         )
 
 
