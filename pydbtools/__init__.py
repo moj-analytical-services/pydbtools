@@ -1,4 +1,4 @@
-from ._wrangler import (
+from ._wrangler import (  # noqa: F401
     create_temp_table,
     read_sql_query,
     read_sql_table,
@@ -13,11 +13,10 @@ from ._wrangler import (
     stop_query_execution,
     wait_query,
     start_query_execution_and_wait,
-    create_temp_table,
     create_temp_database,
 )
 
-from ._sql_render import (
+from ._sql_render import (  # noqa: F401
     get_sql_from_file,
     render_sql_template,
 )
