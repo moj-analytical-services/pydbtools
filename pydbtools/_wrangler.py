@@ -10,21 +10,22 @@ import inspect
 import functools
 
 from pydbtools.utils import (
-    temp_database_name_prefix,
     get_user_id_and_table_dir,
     get_database_name_from_userid,
     clean_query,
     get_default_args,
     get_boto_session,
     replace_temp_database_name_reference,
+    _set_region_name,
 )
 
 
 logger = logging.getLogger(__name__)
 
+
 # Wrapper used to set parameters in the athena wrangler functions
 # before they are called
-def init_athena_params(func=None, *, allow_boto3_session=False):
+def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
     """
     Takes a wrangler athena function and sets the following:
     boto3_session and s3_output_path if exists in function param.
@@ -178,8 +179,9 @@ def create_temp_database(
     temp_db_name: str = None,
     boto3_session=None,
     force_ec2: bool = False,
-    region_name: str = "eu-west-1",
+    region_name: str = None,
 ):
+    region_name = _set_region_name(region_name)
     _ = _create_temp_database(
         temp_db_name=temp_db_name,
         boto3_session=boto3_session,
@@ -192,8 +194,9 @@ def _create_temp_database(
     temp_db_name: str = None,
     boto3_session=None,
     force_ec2: bool = False,
-    region_name: str = "eu-west-1",
+    region_name: str = None,
 ):
+    region_name = _set_region_name(region_name)
     if temp_db_name is None or temp_db_name.lower().strip() == "__temp__":
         user_id, _ = get_user_id_and_table_dir(
             boto3_session=boto3_session, force_ec2=force_ec2, region_name=region_name
@@ -212,14 +215,15 @@ def create_temp_table(
     table_name: str,
     boto3_session=None,
     force_ec2: bool = False,
-    region_name: str = "eu-west-1",
+    region_name: str = None,
 ):
     """
     Create a table inside the database from create database
 
     Args:
         sql (str):
-            The SQL table you want to create a temp table out of. Should be a table that starts with a WITH or SELECT clause.
+            The SQL table you want to create a temp table out of. Should
+            be a table that starts with a WITH or SELECT clause.
 
         table_name (str):
             The name of the temp table you wish to create
@@ -232,9 +236,10 @@ def create_temp_table(
             necessary when using this in Python. Default is False.
 
         region_name (str, optional):
-            Name of the AWS region you want to run queries on. Defaults to "eu-west-1".
+            Name of the AWS region you want to run queries on. Defaults to
+            pydbtools.utils.aws_default_region (which if left unset is "eu-west-1").
     """
-
+    region_name = _set_region_name(region_name)
     check_sql(sql)
 
     # Create named stuff

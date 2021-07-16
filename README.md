@@ -1,5 +1,7 @@
 # pydbtools
 
+A package that is used to run SQL queries speficially configured for the Analytical Platform. This packages uses AWS Wrangler's Athena module but adds additional functionality (like Jinja templating, creating temporary tables) and alters some configuration to our specification. 
+
 ## Installation
 
 > Requires a pip release above 20.

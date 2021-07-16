@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v4.0.0 - 2021-07-16
+
+## Added
+
+- Jinja templating to SQL see `pydbtools.render_sql_template`.
+- Read SQL function that takes an SQL file and returns it as a string (with Jinja arguments if provided) see `pydbtools.get_sql_from_file`.
+
+## Changed
+
+- removed DEPRECATED functions: `pydbtools.get_athena_query_response`
+`pydbtools.read_sql`
+- Made modules not for access private.
+- Added ability to change `bucket`, `temp_database_name_prefix` and `aws_default_region` in `pydbtools.utils`.
+
+
 ## v3.1.1 - 2021-06-25
 
 ## Changed

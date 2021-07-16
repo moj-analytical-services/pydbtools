@@ -1,7 +1,7 @@
 import pytest
 import sqlparse
 
-from pydbtools.wrangler import check_sql
+from pydbtools._wrangler import check_sql
 from pydbtools.utils import replace_temp_database_name_reference, clean_query
 
 sql1 = """
@@ -87,7 +87,9 @@ def test_sql_parse(test_input: str, expected: bool):
         ),
         pytest.param(
             sql2,
-            " ".join(sql2.splitlines()).strip().replace("__temp__", "dbname") + ";",
+            (
+                " ".join(sql2.splitlines()).strip()
+            ).replace("__temp__", "dbname") + ";",
             id="sql2",
         ),
         pytest.param(
@@ -102,7 +104,10 @@ def test_sql_parse(test_input: str, expected: bool):
         ),
         pytest.param(
             sql5,
-            "When querying a temporary database, __temp__ should not be wrapped in quotes",
+            (
+                "When querying a temporary database, "
+                "__temp__ should not be wrapped in quotes"
+            ),
             id="sql5",
         ),
         pytest.param(
@@ -113,9 +118,9 @@ def test_sql_parse(test_input: str, expected: bool):
     ],
 )
 def test_replace_temp_database_name_reference(test_input: str, expected: bool):
-    if (
-        expected
-        == "When querying a temporary database, __temp__ should not be wrapped in quotes"
+    if expected == (
+        "When querying a temporary database, "
+        "__temp__ should not be wrapped in quotes"
     ):
         with pytest.raises(ValueError) as e:
             _ = replace_temp_database_name_reference(test_input, "dbname")
