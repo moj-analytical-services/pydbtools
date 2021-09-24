@@ -11,7 +11,7 @@ A package that is used to run SQL queries speficially configured for the Analyti
 pip install pydbtools
 
 ## Or install from git with a specific release
-pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtools@v3.0.0"
+pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtools@v4.0.1"
 ```
 
 ## Quickstart guide
