@@ -12,6 +12,7 @@ import functools
 from pydbtools.utils import (
     get_user_id_and_table_dir,
     get_database_name_from_userid,
+    get_database_name_from_sql,
     clean_query,
     get_default_args,
     get_boto_session,
@@ -117,6 +118,8 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
                 _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
             elif argmap.get("database", "").lower() == "__temp__":
                 argmap["database"] = temp_db_name
+            elif "sql" in argmap:
+                argmap["database"] = get_database_name_from_sql(argmap["sql"])
             else:
                 argmap["database"] = None
         logger.debug(f"Modifying function {func.__name__}")
