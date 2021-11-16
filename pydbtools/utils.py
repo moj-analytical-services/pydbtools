@@ -2,6 +2,7 @@ from typing import Tuple
 import os
 import re
 import sqlparse
+import sql_metadata
 import inspect
 import boto3
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
