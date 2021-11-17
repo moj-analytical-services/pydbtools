@@ -120,6 +120,15 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
                 argmap["database"] = temp_db_name
             else:
                 argmap["database"] = None
+                
+        # Set pyarrow_additional_kwargs
+        if "pyarrow_additional_kwargs" in argmap and argmap.get(
+            "pyarrow_additional_kwargs", None) is None:
+            argmap['pyarrow_additional_kwargs'] = {
+                "coerce_int96_timestamp_unit": "ms", 
+                "timestamp_as_object": True
+            }
+            
         logger.debug(f"Modifying function {func.__name__}")
         logger.debug(pprint.pformat(dict(argmap)))
         return func(**argmap)
@@ -128,6 +137,17 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
 
 
 def init_database(f):
+    """
+    Takes a function f with parameters sql and database, and
+    sets database according to the sql.
+    
+    Args:
+        f (Callable)
+        
+    Returns:
+        The same function but with database given a deduced value
+    """
+    
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         sig = inspect.signature(f)
@@ -139,23 +159,9 @@ def init_database(f):
     return wrapper
 
 
-def init_pyarrow_args(f):
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        sig = inspect.signature(f)
-        argmap = sig.bind_partial(*args, **kwargs).arguments
-        argmap['pyarrow_additional_kwargs'] = {
-            "coerce_int96_timestamp_unit": "ms", 
-            "timestamp_as_object": True
-        }
-        return f(**argmap)
-    
-    return wrapper
-
-
 # Override all existing awswrangler.athena functions for pydbtools
-read_sql_query = init_pyarrow_args(init_database(init_athena_params(ath.read_sql_query)))
-read_sql_table = init_pyarrow_args(init_athena_params(ath.read_sql_table))
+read_sql_query = init_database(init_athena_params(ath.read_sql_query))
+read_sql_table = init_athena_params(ath.read_sql_table)
 create_athena_bucket = init_athena_params(ath.create_athena_bucket)
 describe_table = init_athena_params(ath.describe_table)
 get_query_columns_types = init_athena_params(ath.get_query_columns_types)
