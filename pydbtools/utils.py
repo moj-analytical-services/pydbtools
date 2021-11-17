@@ -143,7 +143,7 @@ def get_database_name_from_sql(sql: str) -> str:
             return xs[0]
     
     # Return default in case of failure to parse
-    return "database"    
+    return "unknown_database"    
 
 
 def get_boto_session(

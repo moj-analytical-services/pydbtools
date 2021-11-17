@@ -30,7 +30,7 @@ tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>
 
 [[package]]
 name = "awswrangler"
-version = "2.11.0"
+version = "2.12.1"
 description = "Pandas on AWS."
 category = "main"
 optional = false
@@ -39,16 +39,20 @@ python-versions = ">=3.6.2,<3.10"
 [package.dependencies]
 boto3 = ">=1.16.8,<2.0.0"
 botocore = ">=1.19.8,<2.0.0"
+jsonpath-ng = ">=1.5.3,<2.0.0"
 numpy = ">=1.18.0,<2.0.0"
 openpyxl = ">=3.0.0,<3.1.0"
+opensearch-py = ">=1.0.0,<2.0.0"
 pandas = {version = ">=1.2.0,<2.0.0", markers = "python_full_version >= \"3.7.1\" and python_full_version < \"4.0.0\""}
 pg8000 = ">=1.16.0,<1.22.0"
+progressbar2 = ">=3.53.3,<4.0.0"
 pyarrow = ">=2.0.0,<5.1.0"
 pymysql = ">=0.9.0,<1.1.0"
-redshift-connector = ">=2.0.884,<2.1.0"
+redshift-connector = ">=2.0.887,<2.1.0"
+requests-aws4auth = ">=1.1.1,<2.0.0"
 
 [package.extras]
-sqlserver = ["pyodbc (>=4.0.30,<4.1.0)"]
+sqlserver = ["pyodbc (>=4.0.32,<4.1.0)"]
 
 [[package]]
 name = "beautifulsoup4"
@@ -122,6 +126,14 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
+name = "decorator"
+version = "5.1.0"
+description = "Decorators for Humans"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[[package]]
 name = "et-xmlfile"
 version = "1.1.0"
 description = "An implementation of lxml.xmlfile for the standard library"
@@ -185,6 +197,19 @@ optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
+name = "jsonpath-ng"
+version = "1.5.3"
+description = "A final implementation of JSONPath for Python that aims to be standard compliant, including arithmetic and binary comparison operators and providing clear AST for metaprogramming."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+decorator = "*"
+ply = "*"
+six = "*"
+
+[[package]]
 name = "lxml"
 version = "4.6.3"
 description = "Powerful and Pythonic XML processing library combining libxml2/libxslt with the ElementTree API."
@@ -224,6 +249,23 @@ python-versions = ">=3.6"
 
 [package.dependencies]
 et-xmlfile = "*"
+
+[[package]]
+name = "opensearch-py"
+version = "1.0.0"
+description = "Python low-level client for OpenSearch"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, <4"
+
+[package.dependencies]
+certifi = "*"
+urllib3 = ">=1.21.1,<2"
+
+[package.extras]
+async = ["aiohttp (>=3,<4)"]
+develop = ["requests (>=2.0.0,<3.0.0)", "coverage", "mock", "pyyaml", "pytest", "pytest-cov", "black", "jinja2"]
+requests = ["requests (>=2.4.0,<3.0.0)"]
 
 [[package]]
 name = "packaging"
@@ -277,6 +319,30 @@ importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
+
+[[package]]
+name = "ply"
+version = "3.11"
+description = "Python Lex & Yacc"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "progressbar2"
+version = "3.55.0"
+description = "A Python Progressbar library to provide visual (yet text based) progress to long running operations."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+python-utils = ">=2.3.0"
+six = "*"
+
+[package.extras]
+docs = ["sphinx (>=1.7.4)"]
+tests = ["flake8 (>=3.7.7)", "pytest (>=4.6.9)", "pytest-cov (>=2.6.1)", "freezegun (>=0.3.11)", "sphinx (>=1.8.5)"]
 
 [[package]]
 name = "py"
@@ -351,6 +417,17 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 six = ">=1.5"
 
 [[package]]
+name = "python-utils"
+version = "2.5.6"
+description = "Python Utils is a module with some convenient utilities not included with the standard Python install"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = "*"
+
+[[package]]
 name = "pytz"
 version = "2021.1"
 description = "World timezone definitions, modern and historical"
@@ -396,6 +473,18 @@ urllib3 = ">=1.21.1,<1.27"
 [package.extras]
 security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
 socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
+
+[[package]]
+name = "requests-aws4auth"
+version = "1.1.1"
+description = "AWS4 authentication for Requests"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+requests = "*"
+six = "*"
 
 [[package]]
 name = "s3transfer"
@@ -501,7 +590,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7.1,<3.10" # wrangler dependency
-content-hash = "dafc1d1b65c7fb6de6cd4ab3b1d1c9300b76484e238ef458fcaab1f29e8334f3"
+content-hash = "71d7906509c2ef3daa439a6762deeccf4a8fc166a56a609af939ea5a8334ff47"
 
 [metadata.files]
 asn1crypto = [
@@ -517,8 +606,8 @@ attrs = [
     {file = "attrs-21.2.0.tar.gz", hash = "sha256:ef6aaac3ca6cd92904cdd0d83f629a15f18053ec84e6432106f7a4d04ae4f5fb"},
 ]
 awswrangler = [
-    {file = "awswrangler-2.11.0-py3-none-any.whl", hash = "sha256:413e38c62aca7f52517347a92ee17353c9d6ab238ac8ebeca9778f8268f20ef9"},
-    {file = "awswrangler-2.11.0.tar.gz", hash = "sha256:b6cc7374a23447aadb7eb3c66b141ea020153a92e9cec82cb0f387413e9532b1"},
+    {file = "awswrangler-2.12.1-py3-none-any.whl", hash = "sha256:5d02deba6d052251c4ef3a56e77e2e1615fb32f661e41b7f4ad8cc794930a0cb"},
+    {file = "awswrangler-2.12.1.tar.gz", hash = "sha256:03a68f8a9f01dbb3e3a8eab6eb0b549de4790d1e851567f6020723d808d8e56d"},
 ]
 beautifulsoup4 = [
     {file = "beautifulsoup4-4.10.0-py3-none-any.whl", hash = "sha256:9a315ce70049920ea4572a4055bc4bd700c940521d36fc858205ad4fcde149bf"},
@@ -544,6 +633,10 @@ colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
+decorator = [
+    {file = "decorator-5.1.0-py3-none-any.whl", hash = "sha256:7b12e7c3c6ab203a29e157335e9122cb03de9ab7264b137594103fd4a683b374"},
+    {file = "decorator-5.1.0.tar.gz", hash = "sha256:e59913af105b9860aa2c8d3272d9de5a56a4e608db9a2f167a8480b323d529a7"},
+]
 et-xmlfile = [
     {file = "et_xmlfile-1.1.0-py3-none-any.whl", hash = "sha256:a2ba85d1d6a74ef63837eed693bcb89c3f752169b0e3e7ae5b16ca5e1b3deada"},
     {file = "et_xmlfile-1.1.0.tar.gz", hash = "sha256:8eb9e2bc2f8c97e37a2dc85a09ecdcdec9d8a396530a6d5a33b30b9a92da0c5c"},
@@ -567,6 +660,11 @@ jinja2 = [
 jmespath = [
     {file = "jmespath-0.10.0-py2.py3-none-any.whl", hash = "sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"},
     {file = "jmespath-0.10.0.tar.gz", hash = "sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"},
+]
+jsonpath-ng = [
+    {file = "jsonpath-ng-1.5.3.tar.gz", hash = "sha256:a273b182a82c1256daab86a313b937059261b5c5f8c4fa3fc38b882b344dd567"},
+    {file = "jsonpath_ng-1.5.3-py2-none-any.whl", hash = "sha256:f75b95dbecb8a0f3b86fd2ead21c2b022c3f5770957492b9b6196ecccfeb10aa"},
+    {file = "jsonpath_ng-1.5.3-py3-none-any.whl", hash = "sha256:292a93569d74029ba75ac2dc3d3630fc0e17b2df26119a165fa1d498ca47bf65"},
 ]
 lxml = [
     {file = "lxml-4.6.3-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:df7c53783a46febb0e70f6b05df2ba104610f2fb0d27023409734a3ecbb78fb2"},
@@ -725,6 +823,10 @@ openpyxl = [
     {file = "openpyxl-3.0.9-py2.py3-none-any.whl", hash = "sha256:8f3b11bd896a95468a4ab162fc4fcd260d46157155d1f8bfaabb99d88cfcf79f"},
     {file = "openpyxl-3.0.9.tar.gz", hash = "sha256:40f568b9829bf9e446acfffce30250ac1fa39035124d55fc024025c41481c90f"},
 ]
+opensearch-py = [
+    {file = "opensearch-py-1.0.0.tar.gz", hash = "sha256:fa952836cabfa1b2fb05f852edc1a373342494345e89fd52b7124daf4d296bb4"},
+    {file = "opensearch_py-1.0.0-py2.py3-none-any.whl", hash = "sha256:17afebc25dc890b96c4e9ec8692dcfdb6842c028ce8c2d252e8f55c587960177"},
+]
 packaging = [
     {file = "packaging-21.0-py3-none-any.whl", hash = "sha256:c86254f9220d55e31cc94d69bade760f0847da8000def4dfe1c6b872fd14ff14"},
     {file = "packaging-21.0.tar.gz", hash = "sha256:7dc96269f53a4ccec5c0670940a4281106dd0bb343f47b7471f779df49c2fbe7"},
@@ -759,6 +861,14 @@ pg8000 = [
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
+]
+ply = [
+    {file = "ply-3.11-py2.py3-none-any.whl", hash = "sha256:096f9b8350b65ebd2fd1346b12452efe5b9607f7482813ffca50c22722a807ce"},
+    {file = "ply-3.11.tar.gz", hash = "sha256:00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3"},
+]
+progressbar2 = [
+    {file = "progressbar2-3.55.0-py2.py3-none-any.whl", hash = "sha256:e98fee031da31ab9138fd8dd838ac80eafba82764eb75a43d25e3ca622f47d14"},
+    {file = "progressbar2-3.55.0.tar.gz", hash = "sha256:86835d1f1a9317ab41aeb1da5e4184975e2306586839d66daf63067c102f8f04"},
 ]
 py = [
     {file = "py-1.10.0-py2.py3-none-any.whl", hash = "sha256:3b80836aa6d1feeaa108e046da6423ab8f6ceda6468545ae8d02d9d58d18818a"},
@@ -810,6 +920,10 @@ python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
     {file = "python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
 ]
+python-utils = [
+    {file = "python-utils-2.5.6.tar.gz", hash = "sha256:352d5b1febeebf9b3cdb9f3c87a3b26ef22d3c9e274a8ec1e7048ecd2fac4349"},
+    {file = "python_utils-2.5.6-py2.py3-none-any.whl", hash = "sha256:18fbc1a1df9a9061e3059a48ebe5c8a66b654d688b0e3ecca8b339a7f168f208"},
+]
 pytz = [
     {file = "pytz-2021.1-py2.py3-none-any.whl", hash = "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"},
     {file = "pytz-2021.1.tar.gz", hash = "sha256:83a4a90894bf38e243cf052c8b58f381bfe9a7a483f6a9cab140bc7f702ac4da"},
@@ -820,6 +934,10 @@ redshift-connector = [
 requests = [
     {file = "requests-2.25.1-py2.py3-none-any.whl", hash = "sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e"},
     {file = "requests-2.25.1.tar.gz", hash = "sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804"},
+]
+requests-aws4auth = [
+    {file = "requests-aws4auth-1.1.1.tar.gz", hash = "sha256:c0883346ce30b5018903a67da88df72f73ff06e1a320845bba9cd85e811ba0ba"},
+    {file = "requests_aws4auth-1.1.1-py2.py3-none-any.whl", hash = "sha256:dfd9f930ffde48a756b72b55698a8522875ea6358dcffbcc44a66700ace31783"},
 ]
 s3transfer = [
     {file = "s3transfer-0.5.0-py3-none-any.whl", hash = "sha256:9c1dc369814391a6bda20ebbf4b70a0f34630592c9aa520856bf384916af2803"},

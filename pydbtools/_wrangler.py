@@ -118,8 +118,6 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
                 _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
             elif argmap.get("database", "").lower() == "__temp__":
                 argmap["database"] = temp_db_name
-            elif "sql" in argmap:
-                argmap["database"] = get_database_name_from_sql(argmap["sql"])
             else:
                 argmap["database"] = None
         logger.debug(f"Modifying function {func.__name__}")
@@ -129,8 +127,20 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
     return wrapper
 
 
+def init_database(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        sig = inspect.signature(f)
+        argmap = sig.bind_partial(*args, **kwargs).arguments
+        if not argmap.get("database", None):
+            argmap['database'] = get_database_name_from_sql(argmap['sql'])
+        return f(**argmap)
+    
+    return wrapper
+
+
 # Override all existing awswrangler.athena functions for pydbtools
-read_sql_query = init_athena_params(ath.read_sql_query)
+read_sql_query = init_database(init_athena_params(ath.read_sql_query))
 read_sql_table = init_athena_params(ath.read_sql_table)
 create_athena_bucket = init_athena_params(ath.create_athena_bucket)
 describe_table = init_athena_params(ath.describe_table)
