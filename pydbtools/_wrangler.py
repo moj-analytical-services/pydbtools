@@ -139,9 +139,23 @@ def init_database(f):
     return wrapper
 
 
+def init_pyarrow_args(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        sig = inspect.signature(f)
+        argmap = sig.bind_partial(*args, **kwargs).arguments
+        argmap['pyarrow_additional_kwargs'] = {
+            "coerce_int96_timestamp_unit": "ms", 
+            "timestamp_as_object": True
+        }
+        return f(**argmap)
+    
+    return wrapper
+
+
 # Override all existing awswrangler.athena functions for pydbtools
-read_sql_query = init_database(init_athena_params(ath.read_sql_query))
-read_sql_table = init_athena_params(ath.read_sql_table)
+read_sql_query = init_pyarrow_args(init_database(init_athena_params(ath.read_sql_query)))
+read_sql_table = init_pyarrow_args(init_athena_params(ath.read_sql_table))
 create_athena_bucket = init_athena_params(ath.create_athena_bucket)
 describe_table = init_athena_params(ath.describe_table)
 get_query_columns_types = init_athena_params(ath.get_query_columns_types)
