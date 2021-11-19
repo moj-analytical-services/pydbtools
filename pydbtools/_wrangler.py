@@ -12,7 +12,6 @@ import functools
 from pydbtools.utils import (
     get_user_id_and_table_dir,
     get_database_name_from_userid,
-    get_database_name_from_sql,
     clean_query,
     get_default_args,
     get_boto_session,
@@ -99,9 +98,9 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             # Set s3 to default s3 path
             argmap["s3_output"] = s3_output
 
-        # Set ctas_approach to False if not set
+        # Set ctas_approach to True if not set
         if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
-            argmap["ctas_approach"] = False
+            argmap["ctas_approach"] = True
 
         # Fix sql before it is passed to athena
         if "sql" in argmap:
@@ -111,9 +110,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
 
         # Set database to None or set to keyword temp when not needed
         if database_flag:
-            if "ctas_approach" in sig.parameters and argmap.get(
-                "ctas_approach", sig.parameters["ctas_approach"].default
-            ):
+            if "ctas_approach" in sig.parameters and argmap["ctas_approach"]:
                 argmap["database"] = temp_db_name
                 _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
             elif argmap.get("database", "").lower() == "__temp__":
@@ -136,31 +133,8 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
     return wrapper
 
 
-def init_database(f):
-    """
-    Takes a function f with parameters sql and database, and
-    sets database according to the sql.
-    
-    Args:
-        f (Callable)
-        
-    Returns:
-        The same function but with database given a deduced value
-    """
-    
-    @functools.wraps(f)
-    def wrapper(*args, **kwargs):
-        sig = inspect.signature(f)
-        argmap = sig.bind_partial(*args, **kwargs).arguments
-        if not argmap.get("database", None):
-            argmap['database'] = get_database_name_from_sql(argmap['sql'])
-        return f(**argmap)
-    
-    return wrapper
-
-
 # Override all existing awswrangler.athena functions for pydbtools
-read_sql_query = init_database(init_athena_params(ath.read_sql_query))
+read_sql_query = init_athena_params(ath.read_sql_query)
 read_sql_table = init_athena_params(ath.read_sql_table)
 create_athena_bucket = init_athena_params(ath.create_athena_bucket)
 describe_table = init_athena_params(ath.describe_table)

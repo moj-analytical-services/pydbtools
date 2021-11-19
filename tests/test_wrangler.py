@@ -112,7 +112,7 @@ def fun_with_sql_db_s3_ctas(
             False,
         ),
         (
-            {"s3_output": "somewhere"},
+            {"s3_output": "somewhere", "ctas_approach": False},
             fun_with_sql_db_s3_ctas,
             ["get_user_id_and_table_dir"],
             None,
