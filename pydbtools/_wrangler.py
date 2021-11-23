@@ -123,7 +123,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             and "database" in sig.parameters
             and argmap.get("database") is None
         ):
-            argmap["database"] = get_database_name_from_sql(argmap["sql"])
+            argmap["database"] = get_database_name_from_sql(argmap.get("sql", ""))
 
         # Set pyarrow_additional_kwargs
         if (
