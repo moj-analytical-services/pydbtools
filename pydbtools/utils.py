@@ -2,6 +2,7 @@ from typing import Tuple
 import os
 import re
 import sqlparse
+import sql_metadata
 import inspect
 import boto3
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
@@ -122,8 +123,32 @@ def get_database_name_from_userid(user_id: str) -> str:
     return unique_db_name
 
 
+def get_database_name_from_sql(sql: str) -> str:
+    """
+    Obtains database name from SQL query for use
+    by awswrangler.
+
+    Args:
+        sql (str): The raw SQL query as a string
+
+    Returns:
+        str: The database table name
+    """
+
+    for table in sql_metadata.Parser(sql).tables:
+        # Return the first database seen in the
+        # form "database.table"
+        xs = table.split(".")
+        if len(xs) > 1:
+            return xs[0]
+
+    # Return default in case of failure to parse
+    return "unknown_database"
+
+
 def get_boto_session(
-    force_ec2: bool = False, region_name: str = None,
+    force_ec2: bool = False,
+    region_name: str = None,
 ):
     region_name = _set_region_name(region_name)
 

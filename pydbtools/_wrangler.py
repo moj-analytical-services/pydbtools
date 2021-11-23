@@ -5,13 +5,13 @@ import sqlparse
 import warnings
 import logging
 import pprint
-
 import inspect
 import functools
 
 from pydbtools.utils import (
     get_user_id_and_table_dir,
     get_database_name_from_userid,
+    get_database_name_from_sql,
     clean_query,
     get_default_args,
     get_boto_session,
@@ -102,12 +102,6 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
         if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
             argmap["ctas_approach"] = True
 
-        # Fix sql before it is passed to athena
-        if "sql" in argmap:
-            argmap["sql"] = replace_temp_database_name_reference(
-                argmap["sql"], temp_db_name
-            )
-
         # Set database to None or set to keyword temp when not needed
         if database_flag:
             if "ctas_approach" in sig.parameters and argmap["ctas_approach"]:
@@ -117,15 +111,30 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
                 argmap["database"] = temp_db_name
             else:
                 argmap["database"] = None
-                
+
+        # Fix sql before it is passed to athena
+        if "sql" in argmap:
+            argmap["sql"] = replace_temp_database_name_reference(
+                argmap["sql"], temp_db_name
+            )
+
+        if (
+            "sql" in sig.parameters
+            and "database" in sig.parameters
+            and argmap.get("database") is None
+        ):
+            argmap["database"] = get_database_name_from_sql(argmap["sql"])
+
         # Set pyarrow_additional_kwargs
-        if "pyarrow_additional_kwargs" in argmap and argmap.get(
-            "pyarrow_additional_kwargs", None) is None:
-            argmap['pyarrow_additional_kwargs'] = {
-                "coerce_int96_timestamp_unit": "ms", 
-                "timestamp_as_object": True
+        if (
+            "pyarrow_additional_kwargs" in argmap
+            and argmap.get("pyarrow_additional_kwargs", None) is None
+        ):
+            argmap["pyarrow_additional_kwargs"] = {
+                "coerce_int96_timestamp_unit": "ms",
+                "timestamp_as_object": True,
             }
-            
+
         logger.debug(f"Modifying function {func.__name__}")
         logger.debug(pprint.pformat(dict(argmap)))
         return func(**argmap)
