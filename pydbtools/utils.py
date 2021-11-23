@@ -5,6 +5,7 @@ import sqlparse
 import inspect
 import boto3
 from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
+import awswrangler as wr
 
 # Set pydbtool params - if you were so inclined to change them
 bucket = "mojap-athena-query-dump"
@@ -123,7 +124,8 @@ def get_database_name_from_userid(user_id: str) -> str:
 
 
 def get_boto_session(
-    force_ec2: bool = False, region_name: str = None,
+    force_ec2: bool = False,
+    region_name: str = None,
 ):
     region_name = _set_region_name(region_name)
 
@@ -153,3 +155,56 @@ def get_boto_client(
         boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
 
     return boto3_session.client(client_name)
+
+
+def delete_table_and_data(table: str, database: str):
+    """
+    Deletes both a table from an Athena database and the underlying data on S3.
+
+    Args:
+        table (str): The table name to drop.
+        database (str): The database name.
+    """
+
+    path = wr.catalog.get_table_location(database=database, table=table)
+    wr.s3.delete_objects(path)
+    wr.catalog.delete_table_if_exists(database=database, table=table)
+
+
+def delete_database_and_data(database: str):
+    """
+    Deletes both an Athena database and the underlying data on S3.
+
+    Args:
+        database (str): The database name to drop.
+    """
+
+    for table in wr.catalog.get_tables(database=database):
+        delete_table_and_data(table, database)
+    wr.catalog.delete_database(database)
+
+
+def delete_partitions(table: str, database: str, expression: str):
+    """
+    Deletes partitions from an Athena database table matching an expression
+
+    Args:
+        table (str): The table name.
+        database (str): The database name.
+        expression (str): The expression to match.
+
+    Please see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue.html#Glue.Client.get_partitions
+    for instructions on the expression construction.
+
+    Examples:
+    delete_partitions("my_table", "my_database", "year = 2020")
+    """
+
+    matched_partitions = wr.catalog.get_partitions(
+        database, table, expression=expression
+    )
+    # Delete data at partition locations
+    for location in matched_partitions:
+        wr.s3.delete_objects(location)
+    # Delete partitions
+    wr.catalog.delete_partitions(matched_partitions.values())
