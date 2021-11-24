@@ -180,13 +180,14 @@ def delete_database_and_data(database: str):
     """
 
     for table in wr.catalog.get_tables(database=database):
-        delete_table_and_data(table, database)
+        delete_table_and_data(table['Name'], database)
     wr.catalog.delete_database(database)
 
 
-def delete_partitions(table: str, database: str, expression: str):
+def delete_partitions_and_data(table: str, database: str, expression: str):
     """
-    Deletes partitions from an Athena database table matching an expression
+    Deletes partitions and the underlying data on S3 from an Athena database table 
+    matching an expression.
 
     Args:
         table (str): The table name.
@@ -197,7 +198,7 @@ def delete_partitions(table: str, database: str, expression: str):
     for instructions on the expression construction.
 
     Examples:
-    delete_partitions("my_table", "my_database", "year = 2020")
+    delete_partitions("my_table", "my_database", "year = 2020 and month = 5")
     """
 
     matched_partitions = wr.catalog.get_partitions(
@@ -207,4 +208,4 @@ def delete_partitions(table: str, database: str, expression: str):
     for location in matched_partitions:
         wr.s3.delete_objects(location)
     # Delete partitions
-    wr.catalog.delete_partitions(matched_partitions.values())
+    wr.catalog.delete_partitions(table, database, list(matched_partitions.values()))
