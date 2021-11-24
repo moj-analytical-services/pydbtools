@@ -4,10 +4,7 @@ import re
 import sqlparse
 import inspect
 import boto3
-from botocore.credentials import (
-    InstanceMetadataProvider,
-    InstanceMetadataFetcher,
-)
+from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
 
 # Set pydbtool params - if you were so inclined to change them
 bucket = "mojap-athena-query-dump"
@@ -108,9 +105,7 @@ def get_user_id_and_table_dir(
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
-        boto3_session = get_boto_session(
-            force_ec2=force_ec2, region_name=region_name
-        )
+        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
 
     sts_client = boto3_session.client("sts")
     sts_resp = sts_client.get_caller_identity()
@@ -128,17 +123,14 @@ def get_database_name_from_userid(user_id: str) -> str:
 
 
 def get_boto_session(
-    force_ec2: bool = False,
-    region_name: str = None,
+    force_ec2: bool = False, region_name: str = None,
 ):
     region_name = _set_region_name(region_name)
 
     kwargs = {"region_name": region_name}
     if force_ec2:
         provider = InstanceMetadataProvider(
-            iam_role_fetcher=InstanceMetadataFetcher(
-                timeout=1000, num_attempts=2
-            )
+            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
         )
         creds = provider.load().get_frozen_credentials()
         kwargs["aws_access_key_id"] = creds.access_key
@@ -158,8 +150,6 @@ def get_boto_client(
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
-        boto3_session = get_boto_session(
-            force_ec2=force_ec2, region_name=region_name
-        )
+        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
 
     return boto3_session.client(client_name)
