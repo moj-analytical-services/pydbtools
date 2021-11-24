@@ -4,7 +4,10 @@ import re
 import sqlparse
 import inspect
 import boto3
-from botocore.credentials import InstanceMetadataProvider, InstanceMetadataFetcher
+from botocore.credentials import (
+    InstanceMetadataProvider,
+    InstanceMetadataFetcher,
+)
 import awswrangler as wr
 
 # Set pydbtool params - if you were so inclined to change them
@@ -106,7 +109,9 @@ def get_user_id_and_table_dir(
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
-        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
+        boto3_session = get_boto_session(
+            force_ec2=force_ec2, region_name=region_name
+        )
 
     sts_client = boto3_session.client("sts")
     sts_resp = sts_client.get_caller_identity()
@@ -132,7 +137,9 @@ def get_boto_session(
     kwargs = {"region_name": region_name}
     if force_ec2:
         provider = InstanceMetadataProvider(
-            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
+            iam_role_fetcher=InstanceMetadataFetcher(
+                timeout=1000, num_attempts=2
+            )
         )
         creds = provider.load().get_frozen_credentials()
         kwargs["aws_access_key_id"] = creds.access_key
@@ -152,7 +159,9 @@ def get_boto_client(
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
-        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
+        boto3_session = get_boto_session(
+            force_ec2=force_ec2, region_name=region_name
+        )
 
     return boto3_session.client(client_name)
 
@@ -180,21 +189,22 @@ def delete_database_and_data(database: str):
     """
 
     for table in wr.catalog.get_tables(database=database):
-        delete_table_and_data(table['Name'], database)
+        delete_table_and_data(table["Name"], database)
     wr.catalog.delete_database(database)
 
 
 def delete_partitions_and_data(table: str, database: str, expression: str):
     """
-    Deletes partitions and the underlying data on S3 from an Athena database table 
-    matching an expression.
+    Deletes partitions and the underlying data on S3 from an Athena 
+    database table matching an expression.
 
     Args:
         table (str): The table name.
         database (str): The database name.
         expression (str): The expression to match.
 
-    Please see https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue.html#Glue.Client.get_partitions
+    Please see 
+    https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue.html#Glue.Client.get_partitions
     for instructions on the expression construction.
 
     Examples:
@@ -208,4 +218,6 @@ def delete_partitions_and_data(table: str, database: str, expression: str):
     for location in matched_partitions:
         wr.s3.delete_objects(location)
     # Delete partitions
-    wr.catalog.delete_partitions(table, database, list(matched_partitions.values()))
+    wr.catalog.delete_partitions(
+        table, database, list(matched_partitions.values())
+    )
