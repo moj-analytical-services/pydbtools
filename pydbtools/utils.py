@@ -204,8 +204,9 @@ def delete_partitions_and_data(table: str, database: str, expression: str):
         expression (str): The expression to match.
 
     Please see 
-    https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue.html#Glue.Client.get_partitions
-    for instructions on the expression construction.
+    https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue.html#Glue.Client.get_partitions # noqa
+    for instructions on the expression construction, but at a basic level 
+    you can use SQL syntax on your partition columns.
 
     Examples:
     delete_partitions("my_table", "my_database", "year = 2020 and month = 5")
