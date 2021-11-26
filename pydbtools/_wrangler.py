@@ -341,8 +341,8 @@ def read_sql_from_file(
     region_name: str = None,
 ) -> pd.DataFrame:
     """
-    Reads a file of SQL statements and returns the last
-    select statement as a dataframe.
+    Reads a file of SQL statements and returns the result of the 
+    last select statement as a dataframe.
 
     Args:
         path (str): Path to the SQL file
