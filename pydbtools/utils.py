@@ -8,7 +8,7 @@ from botocore.credentials import (
     InstanceMetadataProvider,
     InstanceMetadataFetcher,
 )
-import awswrangler as wr
+
 
 # Set pydbtool params - if you were so inclined to change them
 bucket = "mojap-athena-query-dump"
@@ -164,5 +164,3 @@ def get_boto_client(
         )
 
     return boto3_session.client(client_name)
-
-
