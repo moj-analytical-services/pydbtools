@@ -5,6 +5,8 @@ import sqlparse
 import warnings
 import logging
 import pprint
+import pandas as pd
+import sqlparse
 
 import inspect
 import functools
@@ -99,7 +101,10 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             argmap["s3_output"] = s3_output
 
         # Set ctas_approach to False if not set
-        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
+        if (
+            "ctas_approach" in sig.parameters
+            and argmap.get("ctas_approach") is None
+        ):
             argmap["ctas_approach"] = False
 
         # Fix sql before it is passed to athena
@@ -114,7 +119,9 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
                 "ctas_approach", sig.parameters["ctas_approach"].default
             ):
                 argmap["database"] = temp_db_name
-                _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
+                _ = _create_temp_database(
+                    temp_db_name, boto3_session=boto3_session
+                )
             elif argmap.get("database", "").lower() == "__temp__":
                 argmap["database"] = temp_db_name
             else:
@@ -154,7 +161,9 @@ def start_query_execution_and_wait(sql, *args, **kwargs):
     # to call the original unwrapped athena fun to ensure the wrapper fun
     # is not called again
     query_execution_id = ath.start_query_execution(sql, *args, **kwargs)
-    return ath.wait_query(query_execution_id, boto3_session=kwargs.get("boto3_session"))
+    return ath.wait_query(
+        query_execution_id, boto3_session=kwargs.get("boto3_session")
+    )
 
 
 def check_sql(sql: str):
@@ -199,13 +208,17 @@ def _create_temp_database(
     region_name = _set_region_name(region_name)
     if temp_db_name is None or temp_db_name.lower().strip() == "__temp__":
         user_id, _ = get_user_id_and_table_dir(
-            boto3_session=boto3_session, force_ec2=force_ec2, region_name=region_name
+            boto3_session=boto3_session,
+            force_ec2=force_ec2,
+            region_name=region_name,
         )
         temp_db_name = get_database_name_from_userid(user_id)
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
-    q_e_id = ath.start_query_execution(create_db_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        create_db_query, boto3_session=boto3_session
+    )
     return ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
@@ -255,7 +268,9 @@ def create_temp_table(
 
     drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
 
-    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        drop_table_query, boto3_session=boto3_session
+    )
 
     _ = ath.wait_query(q_e_id, boto3_session=boto3_session)
 
@@ -277,7 +292,6 @@ def create_temp_table(
 @init_athena_params
 def create_temp_table_in_sql(
     sql: str,
-    table_name: str,
     boto3_session=None,
     force_ec2: bool = False,
     region_name: str = None,
@@ -285,35 +299,75 @@ def create_temp_table_in_sql(
     """
     Allows the user to write SQL of the format
     CREATE TEMP TABLE tablename FROM (...)
-    
+
     Args:
         sql (str):
             An SQL query
-        database (str):
-            The name of the temporary database.
-        path (str):
-                
+
     Returns:
         A bool indicating whether a temporary table was
-        created (True) or whether the SQL still needs to 
+        created (True) or whether the SQL still needs to
         be processed (False).
     """
-    
+
     ddl = sqlparse.tokens.DDL
     ws = sqlparse.tokens.Whitespace
     kw = sqlparse.tokens.Keyword
-    matcher = [(0, ddl, 'create'), (1, kw, 'temp'), (2, kw, 'table'), (4, kw, 'from')]
+    matcher = [
+        (0, ddl, "create"),
+        (1, kw, "temp"),
+        (2, kw, "table"),
+        (4, kw, "from"),
+    ]
     ps = sqlparse.parse(sql)
     tokens = [p for p in ps[0].tokens if p.ttype != ws]
 
-    if all(
-        tokens[i].match(t, m, regex=True)
-        for i, t, m in matcher
-    ):
+    if all(tokens[i].match(t, m, regex=True) for i, t, m in matcher):
         table_name = str(ts[3])
         table_sql = str(ts[5])
-        create_temp_table(table_name, table_sql, boto3_session, force_ec2, region_name)
+        create_temp_table(
+            table_name, table_sql, boto3_session, force_ec2, region_name
+        )
         return True
     else:
         return False
+
+
+@init_athena_params
+def read_sql_from_file(
+    path: str,
+    boto3_session=None,
+    force_ec2: bool = False,
+    region_name: str = None,
+) -> pd.DataFrame:
+    """
+    Reads a file of SQL statements and returns the last
+    select statement as a dataframe.
+
+    Args:
+        path (str): Path to the SQL file
+
+    Returns:
+        A Pandas DataFrame or None.
+    """
+
+    df = pd.DataFrame()
+    
+    with open(path, "r") as f:
+        sql = path.read()
+        
+    for query in sql.split(";"):
+        if not create_temp_table_in_sql(
+            query,
+            boto3_session=boto3_session,
+            force_ec2=force_ec2,
+            region_name=region_name,
+        ):
+            df = read_sql_query(
+                query,
+                boto3_session=boto3_session,
+                force_ec2=force_ec2,
+                region_name=region_name,
+            )
             
+    return df
