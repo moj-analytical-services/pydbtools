@@ -272,3 +272,48 @@ def create_temp_table(
     q_e_id = ath.start_query_execution(ctas_query, boto3_session=boto3_session)
 
     ath.wait_query(q_e_id, boto3_session=boto3_session)
+
+
+@init_athena_params
+def create_temp_table_in_sql(
+    sql: str,
+    table_name: str,
+    boto3_session=None,
+    force_ec2: bool = False,
+    region_name: str = None,
+) -> bool:
+    """
+    Allows the user to write SQL of the format
+    CREATE TEMP TABLE tablename FROM (...)
+    
+    Args:
+        sql (str):
+            An SQL query
+        database (str):
+            The name of the temporary database.
+        path (str):
+                
+    Returns:
+        A bool indicating whether a temporary table was
+        created (True) or whether the SQL still needs to 
+        be processed (False).
+    """
+    
+    ddl = sqlparse.tokens.DDL
+    ws = sqlparse.tokens.Whitespace
+    kw = sqlparse.tokens.Keyword
+    matcher = [(0, ddl, 'create'), (1, kw, 'temp'), (2, kw, 'table'), (4, kw, 'from')]
+    ps = sqlparse.parse(sql)
+    tokens = [p for p in ps[0].tokens if p.ttype != ws]
+
+    if all(
+        tokens[i].match(t, m, regex=True)
+        for i, t, m in matcher
+    ):
+        table_name = str(ts[3])
+        table_sql = str(ts[5])
+        create_temp_table(table_name, table_sql, boto3_session, force_ec2, region_name)
+        return True
+    else:
+        return False
+            
