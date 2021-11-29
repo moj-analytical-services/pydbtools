@@ -13,6 +13,15 @@ aws_default_region = os.getenv(
     "AWS_DEFAULT_REGION", os.getenv("AWS_REGION", "eu-west-1")
 )
 
+def _set_aws_session_name():
+    if not os.getenv("AWS_ROLE_SESSION_NAME"):
+        os.environ["AWS_ROLE_SESSION_NAME"] = _get_role_name_from_env()
+
+def _get_role_name_from_env() -> str:
+    aws_role_arn = os.getenv("AWS_ROLE_ARN")
+    if aws_role_arn is None:
+        raise EnvironmentError("AWS_ROLE_ARN was not found in env")
+    return aws_role_arn.split("/")[-1]
 
 def _set_region_name(region_name: str):
     if region_name is None:
@@ -125,6 +134,7 @@ def get_database_name_from_userid(user_id: str) -> str:
 def get_boto_session(
     force_ec2: bool = False, region_name: str = None,
 ):
+    _set_aws_session_name()
     region_name = _set_region_name(region_name)
 
     kwargs = {"region_name": region_name}
