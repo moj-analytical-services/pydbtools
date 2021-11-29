@@ -7,6 +7,7 @@ import logging
 import pprint
 import pandas as pd
 import sqlparse
+import re
 
 import inspect
 import functools
@@ -289,20 +290,14 @@ def create_temp_table(
     ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
-@init_athena_params
-def create_temp_table_in_sql(
-    sql: str,
-    boto3_session=None,
-    force_ec2: bool = False,
-    region_name: str = None,
-) -> bool:
+def create_temp_table_in_sql(sql: str) -> bool:
     """
     Allows the user to write SQL of the format
     CREATE TEMP TABLE tablename FROM (...)
 
     Args:
         sql (str):
-            An SQL query
+            An SQL query parsed by sqlparse.parse.
 
     Returns:
         A bool indicating whether a temporary table was
@@ -310,64 +305,64 @@ def create_temp_table_in_sql(
         be processed (False).
     """
 
-    ddl = sqlparse.tokens.DDL
-    ws = sqlparse.tokens.Whitespace
-    kw = sqlparse.tokens.Keyword
-    matcher = [
-        (0, ddl, "create"),
-        (1, kw, "temp"),
-        (2, kw, "table"),
-        (4, kw, "from"),
-    ]
-    ps = sqlparse.parse(sql)
-    tokens = [p for p in ps[0].tokens if p.ttype != ws]
+    sql = clean_query(sql, fmt_opts={"strip_comments": True})
+    parsed_sql = sqlparse.parse(sql)[0]
 
-    if all(tokens[i].match(t, m, regex=True) for i, t, m in matcher):
-        table_name = str(ts[3])
-        table_sql = str(ts[5])
-        create_temp_table(
-            table_name, table_sql, boto3_session, force_ec2, region_name
-        )
-        return True
+    # Match the tokens we expect to see
+    matcher = [
+        (0, sqlparse.tokens.DDL, "create"),
+        (1, sqlparse.tokens.Keyword, "temp"),
+        (2, sqlparse.tokens.Keyword, "table"),
+        (4, sqlparse.tokens.Keyword, "from"),
+    ]
+    # Filter out whitespace etc
+    tokens = [
+        p
+        for p in parsed_sql.tokens
+        if p.ttype
+        not in [
+            sqlparse.tokens.Whitespace,
+            sqlparse.tokens.Comment,
+            sqlparse.tokens.Newline,
+        ]
+    ]
+
+    if all(tokens[i].match(t, m) for i, t, m in matcher):
+        table_name = str(tokens[3])
+        # Extract the parenthesised SQL
+        table_sql = re.fullmatch(r"\((.*)\)", str(tokens[5]))
+        if table_sql:
+            create_temp_table(table_sql.group(1), table_name)
+            return True
+        else:
+            raise ValueError(
+                f"Could not parse as parenthesised SQL: {str(tokens[5])}"
+            )
     else:
         return False
 
 
-@init_athena_params
-def read_sql_from_file(
-    path: str,
-    boto3_session=None,
-    force_ec2: bool = False,
-    region_name: str = None,
-) -> pd.DataFrame:
+def read_sql_from_file(path: str) -> pd.DataFrame:
     """
-    Reads a file of SQL statements and returns the result of the 
-    last select statement as a dataframe.
+    Reads a file of SQL statements and returns the result of the
+    last select statement as a dataframe. Temporary tables can be
+    created using
+    CREATE TEMP TABLE tablename FROM (sql query)
 
     Args:
         path (str): Path to the SQL file
 
     Returns:
-        A Pandas DataFrame or None.
+        A Pandas DataFrame.
     """
 
     df = pd.DataFrame()
-    
+
     with open(path, "r") as f:
-        sql = path.read()
-        
-    for query in sql.split(";"):
-        if not create_temp_table_in_sql(
-            query,
-            boto3_session=boto3_session,
-            force_ec2=force_ec2,
-            region_name=region_name,
-        ):
-            df = read_sql_query(
-                query,
-                boto3_session=boto3_session,
-                force_ec2=force_ec2,
-                region_name=region_name,
-            )
-            
+        sql = f.read()
+
+    for query in sqlparse.parse(sql):
+        if not create_temp_table_in_sql(str(query)):
+            df = read_sql_query(str(query))
+
     return df

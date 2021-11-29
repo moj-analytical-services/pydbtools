@@ -14,6 +14,8 @@ from ._wrangler import (  # noqa: F401
     wait_query,
     start_query_execution_and_wait,
     create_temp_database,
+    create_temp_table_in_sql,
+    read_sql_from_file,
 )
 
 from ._sql_render import (  # noqa: F401
