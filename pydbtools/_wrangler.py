@@ -110,7 +110,9 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
         if database_flag:
             if "ctas_approach" in sig.parameters and argmap["ctas_approach"]:
                 argmap["database"] = temp_db_name
-                _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
+                _ = _create_temp_database(
+                    temp_db_name, boto3_session=boto3_session
+                )
             elif argmap.get("database", "").lower() == "__temp__":
                 argmap["database"] = temp_db_name
             else:
@@ -174,7 +176,9 @@ def start_query_execution_and_wait(sql, *args, **kwargs):
     # to call the original unwrapped athena fun to ensure the wrapper fun
     # is not called again
     query_execution_id = ath.start_query_execution(sql, *args, **kwargs)
-    return ath.wait_query(query_execution_id, boto3_session=kwargs.get("boto3_session"))
+    return ath.wait_query(
+        query_execution_id, boto3_session=kwargs.get("boto3_session")
+    )
 
 
 def check_sql(sql: str):
@@ -219,13 +223,17 @@ def _create_temp_database(
     region_name = _set_region_name(region_name)
     if temp_db_name is None or temp_db_name.lower().strip() == "__temp__":
         user_id, _ = get_user_id_and_table_dir(
-            boto3_session=boto3_session, force_ec2=force_ec2, region_name=region_name
+            boto3_session=boto3_session,
+            force_ec2=force_ec2,
+            region_name=region_name,
         )
         temp_db_name = get_database_name_from_userid(user_id)
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
-    q_e_id = ath.start_query_execution(create_db_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        create_db_query, boto3_session=boto3_session
+    )
     return ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
@@ -275,7 +283,9 @@ def create_temp_table(
 
     drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
 
-    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        drop_table_query, boto3_session=boto3_session
+    )
 
     _ = ath.wait_query(q_e_id, boto3_session=boto3_session)
 
@@ -292,3 +302,77 @@ def create_temp_table(
     q_e_id = ath.start_query_execution(ctas_query, boto3_session=boto3_session)
 
     ath.wait_query(q_e_id, boto3_session=boto3_session)
+
+
+@init_athena_params(allow_boto3_session=True)
+def delete_table_and_data(table: str, database: str, boto3_session=None):
+    """
+    Deletes both a table from an Athena database and the underlying data on S3.
+
+    Args:
+        table (str): The table name to drop.
+        database (str): The database name.
+    """
+
+    path = wr.catalog.get_table_location(
+        database=database, table=table, boto3_session=boto3_session
+    )
+    wr.s3.delete_objects(path, boto3_session=boto3_session)
+    wr.catalog.delete_table_if_exists(
+        database=database, table=table, boto3_session=boto3_session
+    )
+
+
+@init_athena_params(allow_boto3_session=True)
+def delete_database_and_data(database: str, boto3_session=None):
+    """
+    Deletes both an Athena database and the underlying data on S3.
+
+    Args:
+        database (str): The database name to drop.
+    """
+
+    for table in wr.catalog.get_tables(
+        database=database, boto3_session=boto3_session
+    ):
+        delete_table_and_data(
+            table["Name"], database, boto3_session=boto3_session
+        )
+    wr.catalog.delete_database(database, boto3_session=boto3_session)
+
+
+@init_athena_params(allow_boto3_session=True)
+def delete_partitions_and_data(
+    table: str, database: str, expression: str, boto3_session=None
+):
+    """
+    Deletes partitions and the underlying data on S3 from an Athena
+    database table matching an expression.
+
+    Args:
+        table (str): The table name.
+        database (str): The database name.
+        expression (str): The expression to match.
+
+    Please see
+    https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue.html#Glue.Client.get_partitions # noqa
+    for instructions on the expression construction, but at a basic level
+    you can use SQL syntax on your partition columns.
+
+    Examples:
+    delete_partitions("my_table", "my_database", "year = 2020 and month = 5")
+    """
+
+    matched_partitions = wr.catalog.get_partitions(
+        database, table, expression=expression, boto3_session=boto3_session
+    )
+    # Delete data at partition locations
+    for location in matched_partitions:
+        wr.s3.delete_objects(location, boto3_session=boto3_session)
+    # Delete partitions
+    wr.catalog.delete_partitions(
+        table,
+        database,
+        list(matched_partitions.values()),
+        boto3_session=boto3_session,
+    )
