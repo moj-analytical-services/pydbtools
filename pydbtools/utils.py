@@ -171,7 +171,7 @@ def get_boto_session(
     # Check for new platform authentication
     if os.getenv("AWS_ROLE_ARN") is not None:
         _set_aws_session_name()
-        
+
     region_name = _set_region_name(region_name)
 
     kwargs = {"region_name": region_name}
