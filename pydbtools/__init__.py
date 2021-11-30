@@ -16,6 +16,9 @@ from ._wrangler import (  # noqa: F401
     create_temp_database,
     create_temp_table_in_sql,
     read_sql_from_file,
+    delete_partitions_and_data,
+    delete_table_and_data,
+    delete_database_and_data,
 )
 
 from ._sql_render import (  # noqa: F401
