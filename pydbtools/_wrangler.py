@@ -6,7 +6,6 @@ import warnings
 import logging
 import pprint
 import pandas as pd
-import sqlparse
 import re
 
 import inspect
