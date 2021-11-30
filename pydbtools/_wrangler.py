@@ -98,7 +98,11 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             # Set s3 to default s3 path
             argmap["s3_output"] = s3_output
 
-        # Set ctas_approach to True if not set
+        # Set ctas_approach to True if not set.
+        # Although awswrangler does this by default, we want to ensure
+        # that timestamps are read in correctly to pandas using pyarrow.
+        # Therefore forcing the default option to be True incase future versions
+        # of wrangler change their default behaviour.
         if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
             argmap["ctas_approach"] = True
 
