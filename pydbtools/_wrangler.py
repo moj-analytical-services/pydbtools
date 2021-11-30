@@ -7,6 +7,7 @@ import logging
 import pprint
 import pandas as pd
 import re
+from typing import Iterator
 
 import inspect
 import functools
@@ -296,7 +297,7 @@ def create_temp_table_in_sql(sql: str) -> bool:
 
     Args:
         sql (str):
-            An SQL query parsed by sqlparse.parse.
+            An SQL query.
 
     Returns:
         A bool indicating whether a temporary table was
@@ -304,47 +305,25 @@ def create_temp_table_in_sql(sql: str) -> bool:
         be processed (False).
     """
 
-    sql = clean_query(sql, fmt_opts={"strip_comments": True})
-    parsed_sql = sqlparse.parse(sql)[0]
-
-    # Match the tokens we expect to see
-    matcher = [
-        (0, sqlparse.tokens.DDL, "create"),
-        (1, sqlparse.tokens.Keyword, "temp"),
-        (2, sqlparse.tokens.Keyword, "table"),
-        (4, sqlparse.tokens.Keyword, "from"),
-    ]
-    # Filter out whitespace etc
-    tokens = [
-        p
-        for p in parsed_sql.tokens
-        if p.ttype
-        not in [
-            sqlparse.tokens.Whitespace,
-            sqlparse.tokens.Comment,
-            sqlparse.tokens.Newline,
-        ]
-    ]
-
-    if all(tokens[i].match(t, m) for i, t, m in matcher):
-        table_name = str(tokens[3])
-        # Extract the parenthesised SQL
-        table_sql = re.fullmatch(r"\((.*)\)", str(tokens[5]))
-        if table_sql:
-            create_temp_table(table_sql.group(1), table_name)
-            return True
-        else:
-            raise ValueError(
-                f"Could not parse as parenthesised SQL: {str(tokens[5])}"
-            )
+    sql = clean_query(sql, fmt_opts={"strip_comments": True}).lower()
+    m = re.fullmatch(r'create\s+temp\s+table\s+(\S+)\s+as\s+(.*)', sql)
+    if m:
+        table_name = m.group(1)
+        table_sql = m.group(2)
+        # Remove parentheses from the SQL
+        m = re.fullmatch(r'\((.*)\)', table_sql)
+        if m:
+            table_sql = m.group(1)
+        create_temp_table(table_sql, table_name)
+        return True
     else:
         return False
 
 
-def read_sql_from_file(path: str) -> pd.DataFrame:
+def read_sql_from_file(path: str) -> Iterator[pd.DataFrame]:
     """
     Reads a file of SQL statements and returns the result of the
-    last select statement as a dataframe. Temporary tables can be
+    any select statements as dataframes. Temporary tables can be
     created using
     CREATE TEMP TABLE tablename FROM (sql query)
 
@@ -352,16 +331,36 @@ def read_sql_from_file(path: str) -> pd.DataFrame:
         path (str): Path to the SQL file
 
     Returns:
-        A Pandas DataFrame.
+        An iterator of Pandas DataFrames.
+        
+    Example:
+        If the file eg.sql contains the SQL code
+            create temp table A as (
+                select * from database.table1
+                where year = 2021
+            );
+            
+            create temp table B as (
+                select * from database.table2
+                where amount > 10
+            );
+            
+            select * from __temp__.A 
+            left join __temp__.B
+            on A.id = B.id;
+            
+            select * from __temp__.A 
+            where country = 'UK'
+            
+        df_iter = read_sql_from_file('eg.sql')
+        df1 = next(df_iter)
+        df2 = next(df_iter)
     """
-
-    df = pd.DataFrame()
 
     with open(path, "r") as f:
         sql = f.read()
 
     for query in sqlparse.parse(sql):
         if not create_temp_table_in_sql(str(query)):
-            df = read_sql_query(str(query))
+            yield read_sql_query(str(query))
 
-    return df
