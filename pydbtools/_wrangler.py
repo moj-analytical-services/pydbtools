@@ -382,6 +382,7 @@ def read_sql_from_file(path: str) -> Iterator[pd.DataFrame]:
         if not create_temp_table_in_sql(str(query)):
             yield read_sql_query(str(query))
 
+
 @init_athena_params(allow_boto3_session=True)
 def delete_table_and_data(table: str, database: str, boto3_session=None):
     """
