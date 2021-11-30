@@ -107,7 +107,10 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
         # that timestamps are read in correctly to pandas using pyarrow.
         # Therefore forcing the default option to be True incase future versions
         # of wrangler change their default behaviour.
-        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
+        if (
+            "ctas_approach" in sig.parameters
+            and argmap.get("ctas_approach") is None
+        ):
             argmap["ctas_approach"] = True
 
         # Set database to None or set to keyword temp when not needed
@@ -133,7 +136,9 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             and "database" in sig.parameters
             and argmap.get("database") is None
         ):
-            argmap["database"] = get_database_name_from_sql(argmap.get("sql", ""))
+            argmap["database"] = get_database_name_from_sql(
+                argmap.get("sql", "")
+            )
 
         # Set pyarrow_additional_kwargs
         if (
@@ -324,12 +329,12 @@ def create_temp_table_in_sql(sql: str) -> bool:
     """
 
     sql = clean_query(sql, fmt_opts={"strip_comments": True}).lower()
-    m = re.fullmatch(r'create\s+temp\s+table\s+(\S+)\s+as\s+(.*)', sql)
+    m = re.fullmatch(r"create\s+temp\s+table\s+(\S+)\s+as\s+(.*)", sql)
     if m:
         table_name = m.group(1)
         table_sql = m.group(2)
         # Remove parentheses from the SQL
-        m = re.fullmatch(r'\((.*)\)', table_sql)
+        m = re.fullmatch(r"\((.*)\)", table_sql)
         if m:
             table_sql = m.group(1)
         create_temp_table(table_sql, table_name)
@@ -350,26 +355,26 @@ def read_sql_from_file(path: str) -> Iterator[pd.DataFrame]:
 
     Returns:
         An iterator of Pandas DataFrames.
-        
+
     Example:
         If the file eg.sql contains the SQL code
             create temp table A as (
                 select * from database.table1
                 where year = 2021
             );
-            
+
             create temp table B as (
                 select * from database.table2
                 where amount > 10
             );
-            
-            select * from __temp__.A 
+
+            select * from __temp__.A
             left join __temp__.B
             on A.id = B.id;
-            
-            select * from __temp__.A 
+
+            select * from __temp__.A
             where country = 'UK'
-            
+
         df_iter = read_sql_from_file('eg.sql')
         df1 = next(df_iter)
         df2 = next(df_iter)
