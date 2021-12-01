@@ -99,7 +99,10 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             argmap["s3_output"] = s3_output
 
         # Set ctas_approach to False if not set
-        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
+        if (
+            "ctas_approach" in sig.parameters
+            and argmap.get("ctas_approach") is None
+        ):
             argmap["ctas_approach"] = False
 
         # Fix sql before it is passed to athena
@@ -114,7 +117,9 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
                 "ctas_approach", sig.parameters["ctas_approach"].default
             ):
                 argmap["database"] = temp_db_name
-                _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
+                _ = _create_temp_database(
+                    temp_db_name, boto3_session=boto3_session
+                )
             elif argmap.get("database", "").lower() == "__temp__":
                 argmap["database"] = temp_db_name
             else:
@@ -154,7 +159,9 @@ def start_query_execution_and_wait(sql, *args, **kwargs):
     # to call the original unwrapped athena fun to ensure the wrapper fun
     # is not called again
     query_execution_id = ath.start_query_execution(sql, *args, **kwargs)
-    return ath.wait_query(query_execution_id, boto3_session=kwargs.get("boto3_session"))
+    return ath.wait_query(
+        query_execution_id, boto3_session=kwargs.get("boto3_session")
+    )
 
 
 def check_sql(sql: str):
@@ -199,13 +206,17 @@ def _create_temp_database(
     region_name = _set_region_name(region_name)
     if temp_db_name is None or temp_db_name.lower().strip() == "__temp__":
         user_id, _ = get_user_id_and_table_dir(
-            boto3_session=boto3_session, force_ec2=force_ec2, region_name=region_name
+            boto3_session=boto3_session,
+            force_ec2=force_ec2,
+            region_name=region_name,
         )
         temp_db_name = get_database_name_from_userid(user_id)
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
-    q_e_id = ath.start_query_execution(create_db_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        create_db_query, boto3_session=boto3_session
+    )
     return ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
@@ -255,7 +266,9 @@ def create_temp_table(
 
     drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
 
-    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        drop_table_query, boto3_session=boto3_session
+    )
 
     _ = ath.wait_query(q_e_id, boto3_session=boto3_session)
 
