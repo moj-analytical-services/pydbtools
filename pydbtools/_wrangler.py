@@ -333,12 +333,12 @@ def _create_temp_table_in_sql(sql: str) -> bool:
     if m:
         table_name = m.group(1)
         table_sql = m.group(2)
-        
+
         # Remove parentheses from the SQL
         m = re.fullmatch(r"\((.*)\)", table_sql)
         if m:
             table_sql = m.group(1)
-            
+
         create_temp_table(table_sql, table_name)
         return True
     else:
