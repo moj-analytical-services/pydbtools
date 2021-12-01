@@ -328,8 +328,10 @@ def _create_temp_table_in_sql(sql: str) -> bool:
         be processed (False).
     """
 
-    sql = clean_query(sql, fmt_opts={"strip_comments": True}).lower()
-    m = re.fullmatch(r"create\s+temp\s+table\s+(\S+)\s+as\s+(.*)", sql)
+    sql = clean_query(sql, fmt_opts={"strip_comments": True})
+    m = re.fullmatch(
+        r"create\s+temp\s+table\s+(\S+)\s+as\s+(.*)", sql, flags=re.IGNORECASE
+    )
     if m:
         table_name = m.group(1)
         table_sql = m.group(2)
