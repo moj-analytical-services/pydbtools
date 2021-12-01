@@ -313,10 +313,10 @@ def create_temp_table(
     ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
-def create_temp_table_in_sql(sql: str) -> bool:
+def _create_temp_table_in_sql(sql: str) -> bool:
     """
     Allows the user to write SQL of the format
-    CREATE TEMP TABLE tablename FROM (...)
+    CREATE TEMP TABLE tablename AS (...)
 
     Args:
         sql (str):
@@ -333,25 +333,27 @@ def create_temp_table_in_sql(sql: str) -> bool:
     if m:
         table_name = m.group(1)
         table_sql = m.group(2)
+        
         # Remove parentheses from the SQL
         m = re.fullmatch(r"\((.*)\)", table_sql)
         if m:
             table_sql = m.group(1)
+            
         create_temp_table(table_sql, table_name)
         return True
     else:
         return False
 
 
-def read_sql_from_file(path: str) -> Iterator[pd.DataFrame]:
+def read_sql_queries(sql: str) -> Iterator[pd.DataFrame]:
     """
-    Reads a file of SQL statements and returns the result of the
+    Reads a number of SQL statements and returns the result of the
     any select statements as dataframes. Temporary tables can be
     created using
-    CREATE TEMP TABLE tablename FROM (sql query)
+    CREATE TEMP TABLE tablename AS (sql query)
 
     Args:
-        path (str): Path to the SQL file
+        sql (str): SQL commands
 
     Returns:
         An iterator of Pandas DataFrames.
@@ -380,11 +382,8 @@ def read_sql_from_file(path: str) -> Iterator[pd.DataFrame]:
         df2 = next(df_iter)
     """
 
-    with open(path, "r") as f:
-        sql = f.read()
-
     for query in sqlparse.parse(sql):
-        if not create_temp_table_in_sql(str(query)):
+        if not _create_temp_table_in_sql(str(query)):
             yield read_sql_query(str(query))
 
 
@@ -444,7 +443,7 @@ def delete_partitions_and_data(
     you can use SQL syntax on your partition columns.
 
     Examples:
-    delete_partitions("my_table", "my_database", "year = 2020 and month = 5")
+    delete_partitions_and_data("my_table", "my_database", "year = 2020 and month = 5")
     """
 
     matched_partitions = wr.catalog.get_partitions(
