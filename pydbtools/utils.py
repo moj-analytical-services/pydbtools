@@ -93,23 +93,22 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
     Returns:
         str: The new SQL query which is sent to Athena
     """
-    # check query is valid and clean
 
-    parsed = sqlparse.parse(clean_query(sql))
+    parsed = sqlparse.parse(sql)
     new_query = []
     for query in parsed:
         check_temp_query(str(query))
-        for word in str(query).strip().split(" "):
-            if "__temp__." in word.lower():
-                word = word.lower().replace("__temp__.", f"{database_name}.")
-            new_query.append(word)
-        if ";" not in new_query[-1]:
-            last_entry = new_query[-1] + ";"
-        else:
-            last_entry = new_query[-1]
-        del new_query[-1]
-        new_query.append(last_entry)
-    return " ".join(new_query)
+        # Get all the separated tokens from subtrees
+        fq = list(query.flatten())
+        # Join them back together replacing __temp__
+        # where necessary
+        new_query.append(
+            "".join(
+                re.sub("^__temp__", f"{database_name}", str(word))
+                for word in fq
+            )
+        )
+    return "".join(new_query)
 
 
 def get_user_id_and_table_dir(
