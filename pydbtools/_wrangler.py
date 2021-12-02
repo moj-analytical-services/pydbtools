@@ -12,7 +12,6 @@ from pydbtools.utils import (
     get_user_id_and_table_dir,
     get_database_name_from_userid,
     get_database_name_from_sql,
-    clean_query,
     get_default_args,
     get_boto_session,
     replace_temp_database_name_reference,
@@ -185,7 +184,7 @@ def check_sql(sql: str):
     """
     Validates sql to confirm it is a select statement
     """
-    parsed = sqlparse.parse(clean_query(sql, {"strip_comments": True}))
+    parsed = sqlparse.parse(sql, {"strip_comments": True})
     i = 0
     for p in parsed:
         if p.get_type() != "SELECT" or i > 0:
