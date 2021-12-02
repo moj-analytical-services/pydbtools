@@ -5,6 +5,10 @@ import sqlparse
 import warnings
 import logging
 import pprint
+import pandas as pd
+import re
+from typing import Iterator
+
 import inspect
 import functools
 
@@ -103,7 +107,10 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
         # that timestamps are read in correctly to pandas using pyarrow.
         # Therefore forcing the default option to be True incase future versions
         # of wrangler change their default behaviour.
-        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
+        if (
+            "ctas_approach" in sig.parameters
+            and argmap.get("ctas_approach") is None
+        ):
             argmap["ctas_approach"] = True
 
         # Set database to None or set to keyword temp when not needed
@@ -129,7 +136,9 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             and "database" in sig.parameters
             and argmap.get("database") is None
         ):
-            argmap["database"] = get_database_name_from_sql(argmap.get("sql", ""))
+            argmap["database"] = get_database_name_from_sql(
+                argmap.get("sql", "")
+            )
 
         # Set pyarrow_additional_kwargs
         if (
@@ -304,6 +313,82 @@ def create_temp_table(
     ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
+def _create_temp_table_in_sql(sql: str) -> bool:
+    """
+    Allows the user to write SQL of the format
+    CREATE TEMP TABLE tablename AS (...)
+
+    Args:
+        sql (str):
+            An SQL query.
+
+    Returns:
+        A bool indicating whether a temporary table was
+        created (True) or whether the SQL still needs to
+        be processed (False).
+    """
+
+    sql = clean_query(sql, fmt_opts={"strip_comments": True})
+    m = re.fullmatch(
+        r"create\s+temp\s+table\s+(\S+)\s+as\s+(.*)", sql, flags=re.IGNORECASE
+    )
+    if m:
+        table_name = m.group(1)
+        table_sql = m.group(2)
+
+        # Remove parentheses from the SQL
+        m = re.fullmatch(r"\((.*)\)", table_sql)
+        if m:
+            table_sql = m.group(1)
+
+        create_temp_table(table_sql, table_name)
+        return True
+    else:
+        return False
+
+
+def read_sql_queries(sql: str) -> Iterator[pd.DataFrame]:
+    """
+    Reads a number of SQL statements and returns the result of the
+    any select statements as dataframes. Temporary tables can be
+    created using
+    CREATE TEMP TABLE tablename AS (sql query)
+
+    Args:
+        sql (str): SQL commands
+
+    Returns:
+        An iterator of Pandas DataFrames.
+
+    Example:
+        If the file eg.sql contains the SQL code
+            create temp table A as (
+                select * from database.table1
+                where year = 2021
+            );
+
+            create temp table B as (
+                select * from database.table2
+                where amount > 10
+            );
+
+            select * from __temp__.A
+            left join __temp__.B
+            on A.id = B.id;
+
+            select * from __temp__.A
+            where country = 'UK'
+
+        df_iter = read_sql_from_file('eg.sql')
+        df1 = next(df_iter)
+        df2 = next(df_iter)
+    """
+
+    for query in sqlparse.parse(sql):
+        if not _create_temp_table_in_sql(str(query)):
+            yield read_sql_query(str(query))
+
+
 @init_athena_params(allow_boto3_session=True)
 def delete_table_and_data(table: str, database: str, boto3_session=None):
     """
@@ -360,7 +445,7 @@ def delete_partitions_and_data(
     you can use SQL syntax on your partition columns.
 
     Examples:
-    delete_partitions("my_table", "my_database", "year = 2020 and month = 5")
+    delete_partitions_and_data("my_table", "my_database", "year = 2020 and month = 5")
     """
 
     matched_partitions = wr.catalog.get_partitions(
