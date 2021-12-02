@@ -53,6 +53,24 @@ def check_temp_query(sql: str):
         )
 
 
+def clean_query(sql: str, fmt_opts: dict = {}) -> str:
+    """
+    removes trailing whitespace, newlines and final
+    semicolon from sql for use with
+    sqlparse package
+    Args:
+        sql (str): The raw SQL query
+        fmt_opts (dict): Dictionary of params to pass to sqlparse.format.
+        If None then sqlparse.format is not called.
+    Returns:
+        str: The cleaned SQL query
+    """
+    fmt_opts["strip_comments"] = True
+    sql = sqlparse.format(sql, **fmt_opts)
+    sql = " ".join(sql.splitlines()).strip().rstrip(";")
+    return sql
+
+
 def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
     """
     Replaces references to the user's temp database __temp__
@@ -76,7 +94,9 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
         # where necessary
         new_query.append(
             "".join(
-                re.sub("^__temp__", database_name, str(word))
+                re.sub(
+                    "^__temp__", database_name, str(word), flags=re.IGNORECASE
+                )
                 for word in fq
             )
         )

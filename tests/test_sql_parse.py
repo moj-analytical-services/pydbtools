@@ -82,24 +82,22 @@ def test_sql_parse(test_input: str, expected: bool):
     [
         pytest.param(
             sql1,
-            " ".join(sql1.splitlines()).strip().replace("__TEMP__", "dbname"),
+            sql1.replace("__TEMP__", "dbname"),
             id="sql1",
         ),
         pytest.param(
             sql2,
-            (
-                " ".join(sql2.splitlines()).strip()
-            ).replace("__temp__", "dbname") + ";",
+            sql2.replace("__temp__", "dbname"),
             id="sql2",
         ),
         pytest.param(
             sql3,
-            " ".join(sql3.splitlines()).strip().replace("__temp__", "dbname") + ";",
+            sql3.replace("__temp__", "dbname"),
             id="sql3",
         ),
         pytest.param(
             sql4,
-            " ".join(sql4.splitlines()).strip().replace("__temp__", "dbname") + ";",
+            sql4.replace("__temp__", "dbname"),
             id="sql4",
         ),
         pytest.param(
@@ -112,7 +110,7 @@ def test_sql_parse(test_input: str, expected: bool):
         ),
         pytest.param(
             sql6,
-            " ".join(sql6.splitlines()).strip().replace("__temp__", "dbname", 1) + ";",
+            sql6.replace("__temp__", "dbname", 1),
             id="sql6",
         ),
     ],
@@ -133,7 +131,7 @@ def test_replace_temp_database_name_reference(test_input: str, expected: bool):
 def test_comment_removal_fixes_sql_type(sql_dict):
 
     test_sql = sql_dict["buggy"]
-    stmt = sqlparse.parse(clean_query(test_sql),)[0]
+    stmt = sqlparse.parse(test_sql)[0]
     assertion_msg = (
         "This is just testing a known error with SQL parser. "
         "If this test fails and get_type() returns 'SELECT'. "
@@ -142,5 +140,5 @@ def test_comment_removal_fixes_sql_type(sql_dict):
     assert stmt.get_type() == "UNKNOWN", assertion_msg
 
     opts = {"strip_comments": True}
-    stmt = sqlparse.parse(clean_query(test_sql, opts),)[0]
+    stmt = sqlparse.parse(clean_query(test_sql, opts))[0]
     assert stmt.get_type() == "SELECT"

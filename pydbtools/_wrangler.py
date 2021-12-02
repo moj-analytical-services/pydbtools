@@ -12,6 +12,7 @@ from pydbtools.utils import (
     get_user_id_and_table_dir,
     get_database_name_from_userid,
     get_database_name_from_sql,
+    clean_query,
     get_default_args,
     get_boto_session,
     replace_temp_database_name_reference,
@@ -102,7 +103,10 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
         # that timestamps are read in correctly to pandas using pyarrow.
         # Therefore forcing the default option to be True incase future versions
         # of wrangler change their default behaviour.
-        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
+        if (
+            "ctas_approach" in sig.parameters
+            and argmap.get("ctas_approach") is None
+        ):
             argmap["ctas_approach"] = True
 
         # Set database to None or set to keyword temp when not needed
@@ -128,7 +132,9 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             and "database" in sig.parameters
             and argmap.get("database") is None
         ):
-            argmap["database"] = get_database_name_from_sql(argmap.get("sql", ""))
+            argmap["database"] = get_database_name_from_sql(
+                argmap.get("sql", "")
+            )
 
         # Set pyarrow_additional_kwargs
         if (
@@ -184,7 +190,7 @@ def check_sql(sql: str):
     """
     Validates sql to confirm it is a select statement
     """
-    parsed = sqlparse.parse(sql, {"strip_comments": True})
+    parsed = sqlparse.parse(clean_query(sql))
     i = 0
     for p in parsed:
         if p.get_type() != "SELECT" or i > 0:
