@@ -194,7 +194,7 @@ def check_sql(sql: str):
     """
     Validates sql to confirm it is a select statement
     """
-    parsed = sqlparse.parse(clean_query(sql, {"strip_comments": True}))
+    parsed = sqlparse.parse(clean_query(sql))
     i = 0
     for p in parsed:
         if p.get_type() != "SELECT" or i > 0:
