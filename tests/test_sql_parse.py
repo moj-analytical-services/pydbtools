@@ -82,22 +82,22 @@ def test_sql_parse(test_input: str, expected: bool):
     [
         pytest.param(
             sql1,
-            sql1.replace("__TEMP__", "dbname"),
+            sql1.replace("__TEMP__", "dbname").strip(),
             id="sql1",
         ),
         pytest.param(
             sql2,
-            sql2.replace("__temp__", "dbname"),
+            sql2.replace("__temp__", "dbname").strip(),
             id="sql2",
         ),
         pytest.param(
             sql3,
-            sql3.replace("__temp__", "dbname"),
+            sql3.replace("__temp__", "dbname").strip(),
             id="sql3",
         ),
         pytest.param(
             sql4,
-            sql4.replace("__temp__", "dbname"),
+            sql4.replace("__temp__", "dbname").strip(),
             id="sql4",
         ),
         pytest.param(
@@ -110,7 +110,7 @@ def test_sql_parse(test_input: str, expected: bool):
         ),
         pytest.param(
             sql6,
-            sql6.replace("__temp__", "dbname", 1),
+            sql6.replace("__temp__", "dbname", 1).strip(),
             id="sql6",
         ),
     ],

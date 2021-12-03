@@ -100,7 +100,9 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
                 for word in fq
             )
         )
-    return "".join(new_query)
+    # Strip output for consistency, different versions of sqlparse
+    # treat a trailing newline differently
+    return "".join(new_query).strip()
 
 
 def get_user_id_and_table_dir(
