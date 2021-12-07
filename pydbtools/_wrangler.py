@@ -56,7 +56,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
 
         # Create a db flag
         database_flag = "database" in sig.parameters and (
-            argmap.get("database", "__temp__").lower() == "__temp__"
+            argmap.get("database", "__temp__") in ["__temp__", "__TEMP__"]
         )
 
         # If wrapper allows boto3 session being defined by user
