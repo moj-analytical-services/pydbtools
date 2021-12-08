@@ -428,15 +428,15 @@ def delete_database_and_data(database: str, boto3_session=None):
 
 @init_athena_params(allow_boto3_session=True)
 def delete_partitions_and_data(
-    table: str, database: str, expression: str, boto3_session=None
+    database: str, table: str, expression: str, boto3_session=None
 ):
     """
     Deletes partitions and the underlying data on S3 from an Athena
     database table matching an expression.
 
     Args:
-        table (str): The table name.
         database (str): The database name.
+        table (str): The table name.
         expression (str): The expression to match.
 
     Please see
@@ -445,7 +445,7 @@ def delete_partitions_and_data(
     you can use SQL syntax on your partition columns.
 
     Examples:
-    delete_partitions_and_data("my_table", "my_database", "year = 2020 and month = 5")
+    delete_partitions_and_data("my_database", "my_table", "year = 2020 and month = 5")
     """
 
     matched_partitions = wr.catalog.get_partitions(
