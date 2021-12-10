@@ -73,6 +73,38 @@ df = pydb.read_sql_query("SELECT * from __temp__.temp_table_1")
 df.head()
 ```
 
+### Run SQL from a string of statements or a file
+
+You can create temporary tables within SQL using the syntax below.
+
+```python
+import pydbtools as pydb
+
+sql = """
+create temp table A as (
+    select * from database.table1
+    where year = 2021
+);
+
+create temp table B as (
+    select * from database.table2
+    where amount > 10
+);
+
+select * from __temp__.A
+left join __temp__.B
+on A.id = B.id;
+
+select * from __temp__.A
+where country = 'UK'
+"""
+
+df_iter = read_sql_queries(sql)
+df1 = next(df_iter)
+df2 = next(df_iter)
+```
+ 
+
 ## Usage / Examples
 
 ### Simple 

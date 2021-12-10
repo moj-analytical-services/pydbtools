@@ -349,10 +349,11 @@ def _create_temp_table_in_sql(sql: str) -> bool:
 
 def read_sql_queries(sql: str) -> Iterator[pd.DataFrame]:
     """
-    Reads a number of SQL statements and returns the result of the
-    any select statements as dataframes. Temporary tables can be
-    created using
+    Reads a number of SQL statements and returns the result of
+    any select statements as a dataframe generator. 
+    Temporary tables can be created using
     CREATE TEMP TABLE tablename AS (sql query)
+    and accessed using __temp__ as the database.
 
     Args:
         sql (str): SQL commands
@@ -379,14 +380,17 @@ def read_sql_queries(sql: str) -> Iterator[pd.DataFrame]:
             select * from __temp__.A
             where country = 'UK'
 
-        df_iter = read_sql_from_file('eg.sql')
+        df_iter = read_sql_queries(open('eg.sql', 'r').read())
         df1 = next(df_iter)
         df2 = next(df_iter)
     """
 
     for query in sqlparse.parse(sql):
         if not _create_temp_table_in_sql(str(query)):
-            yield read_sql_query(str(query))
+            if query.get_type() == 'SELECT': 
+                yield read_sql_query(str(query))
+            else:
+                start_query_execution_and_wait(str(query))
 
 
 @init_athena_params(allow_boto3_session=True)
