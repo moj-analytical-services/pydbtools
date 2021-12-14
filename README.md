@@ -16,6 +16,8 @@ pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtool
 
 ## Quickstart guide
 
+The [examples directory](examples) contains more detailed notebooks demonstrating the use of this library, many of which are borrowed from the [mojap-aws-tools-demo repo](https://github.com/moj-analytical-services/mojap-aws-tools-demo). 
+
 ### Read an SQL Athena query into a pandas dataframe
 
 ```python
@@ -73,9 +75,12 @@ df = pydb.read_sql_query("SELECT * from __temp__.temp_table_1")
 df.head()
 ```
 
+See [the example notebook](examples/create_temporary_tables.ipynb) for a more detailed example.
+
+
 ### Run SQL from a string of statements or a file
 
-You can create temporary tables within SQL using the syntax below.
+It wil often be more convenient to write your SQL in an editor with language support rather than as a Python string. You can create temporary tables within SQL using the syntax below.
 
 ```python
 import pydbtools as pydb
@@ -99,11 +104,51 @@ select * from __temp__.A
 where country = 'UK'
 """
 
-df_iter = read_sql_queries(sql)
+with open("queries.sql", "w") as f:
+    f.write(sql)
+    
+with open("queries.sql", "r") as f:
+    df_iter = pydb.read_sql_queries(f.read())
+    
 df1 = next(df_iter)
 df2 = next(df_iter)
 ```
+
+See [the notebook on creating temporary tables with SQL](examples/create_temporary_tables_from_sql_file.ipynb) and [the notebook on database administration with SQL](examples/creating_and_maintaining_database_tables_in_athena_from_sql.ipynb) for more detailed examples.
+
+Additionally you can use [Jinja](https://jinja.palletsprojects.com/en/3.0.x/) templating to inject arguments into your SQL.
+
+```python
+sql_template = """
+SELECT *
+FROM {{ db_name }}.{{ table }}
+"""
+sql = pydb.render_sql_template(sql_template, {"db_name": db_name, "table": "department"})
+pydb.read_sql_query(sql)
+
+with open("tempfile.sql", "w") as f:
+    f.write("SELECT * FROM {{ db_name }}.{{ table_name }}")
+sql = pydb.get_sql_from_file("tempfile.sql", jinja_args={"db_name": db_name, "table_name": "department"})
+pydb.read_sql_query(sql)
+"""
+```
+
+See the [notebook on SQL templating](examples/sql_templating.ipynb) for more details.
  
+### Delete databases, tables and partitions together with the data on S3
+
+```python
+import pydbtools as pydb
+
+pydb.delete_partitions_and_data(database='my_database', table='my_table', expression='year = 2020 or year = 2021')
+pydb.delete_table_and_data(database='my_database', table='my_table')
+pydb.delete_database('my_database')
+
+# These can be used for temporary databases and tables.
+pydb.delete_table_and_data(database='__temp__', table='my_temp_table')
+```
+
+For more details see [the notebook on deletions](examples/delete_databases_tables_and_partitions.ipynb).
 
 ## Usage / Examples
 
