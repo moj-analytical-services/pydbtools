@@ -7,7 +7,7 @@ import logging
 import pprint
 import pandas as pd
 import re
-from typing import Iterator
+from typing import Iterator, Optional
 
 import inspect
 import functools
@@ -347,7 +347,43 @@ def _create_temp_table_in_sql(sql: str) -> bool:
         return False
 
 
-def read_sql_queries(sql: str) -> Iterator[pd.DataFrame]:
+def read_sql_queries(sql: str) -> Optional[pd.DataFrame]:
+    """
+    Reads a number of SQL statements and returns the result of
+    the first select statement as a dataframe.
+    Temporary tables can be created using
+    CREATE TEMP TABLE tablename AS (sql query)
+    and accessed using __temp__ as the database.
+
+    Args:
+        sql (str): SQL commands
+
+    Returns:
+        An iterator of Pandas DataFrames.
+
+    Example:
+        If the file eg.sql contains the SQL code
+            create temp table A as (
+                select * from database.table1
+                where year = 2021
+            );
+
+            create temp table B as (
+                select * from database.table2
+                where amount > 10
+            );
+
+            select * from __temp__.A
+            left join __temp__.B
+            on A.id = B.id;
+
+        df = read_sql_queries(open('eg.sql', 'r').read())
+    """
+
+    return next(read_sql_queries_gen(sql), None)
+
+
+def read_sql_queries_gen(sql: str) -> Iterator[pd.DataFrame]:
     """
     Reads a number of SQL statements and returns the result of
     any select statements as a dataframe generator.

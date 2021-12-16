@@ -15,6 +15,7 @@ from ._wrangler import (  # noqa: F401
     start_query_execution_and_wait,
     create_temp_database,
     read_sql_queries,
+    read_sql_queries_gen,
     delete_partitions_and_data,
     delete_table_and_data,
     delete_database_and_data,

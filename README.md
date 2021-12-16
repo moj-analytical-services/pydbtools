@@ -99,20 +99,16 @@ create temp table B as (
 select * from __temp__.A
 left join __temp__.B
 on A.id = B.id;
-
-select * from __temp__.A
-where country = 'UK'
 """
 
 with open("queries.sql", "w") as f:
     f.write(sql)
     
 with open("queries.sql", "r") as f:
-    df_iter = pydb.read_sql_queries(f.read())
-    
-df1 = next(df_iter)
-df2 = next(df_iter)
+    df = pydb.read_sql_queries(f.read())
 ```
+
+Multiple `SELECT` queries can be returned as a generator of dataframes using `read_sql_queries_gen`.
 
 See [the notebook on creating temporary tables with SQL](examples/create_temporary_tables_from_sql_file.ipynb) and [the notebook on database administration with SQL](examples/creating_and_maintaining_database_tables_in_athena_from_sql.ipynb) for more detailed examples.
 
