@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Optional
 import os
 import re
 import sqlparse
@@ -65,7 +65,7 @@ def check_temp_query(sql: str):
         )
 
 
-def clean_query(sql: str, fmt_opts: dict = {}) -> str:
+def clean_query(sql: str, fmt_opts: Optional[dict] = None) -> str:
     """
     removes trailing whitespace, newlines and final
     semicolon from sql for use with
@@ -77,6 +77,8 @@ def clean_query(sql: str, fmt_opts: dict = {}) -> str:
     Returns:
         str: The cleaned SQL query
     """
+    if fmt_opts is None:
+        fmt_opts = {}
     fmt_opts["strip_comments"] = True
     sql = sqlparse.format(sql, **fmt_opts)
     sql = " ".join(sql.splitlines()).strip().rstrip(";")
