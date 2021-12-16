@@ -350,7 +350,7 @@ def _create_temp_table_in_sql(sql: str) -> bool:
 def read_sql_queries(sql: str) -> Iterator[pd.DataFrame]:
     """
     Reads a number of SQL statements and returns the result of
-    any select statements as a dataframe generator. 
+    any select statements as a dataframe generator.
     Temporary tables can be created using
     CREATE TEMP TABLE tablename AS (sql query)
     and accessed using __temp__ as the database.
@@ -387,7 +387,7 @@ def read_sql_queries(sql: str) -> Iterator[pd.DataFrame]:
 
     for query in sqlparse.parse(sql):
         if not _create_temp_table_in_sql(str(query)):
-            if query.get_type() == 'SELECT': 
+            if query.get_type() == "SELECT":
                 yield read_sql_query(str(query))
             else:
                 start_query_execution_and_wait(str(query))
