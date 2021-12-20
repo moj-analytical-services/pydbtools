@@ -16,9 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Temporary database names are now compatible with EKS.
 - `ctas_approach` now defaults to `True`, the default behaviour for `awswrangler`, using a temporary database.
-- Queries automatically use values for `pyarrow_additional_kwargs` that solve
-
-- [this awswrangler issue](https://github.com/awslabs/aws-data-wrangler/issues/592)
+- Queries automatically use values for `pyarrow_additional_kwargs` that solve [this awswrangler issue](https://github.com/awslabs/aws-data-wrangler/issues/592)
 
 ## v4.0.1 - 2021-09-24
 
