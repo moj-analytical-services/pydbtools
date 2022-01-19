@@ -26,4 +26,4 @@ from ._sql_render import (  # noqa: F401
     render_sql_template,
 )
 
-__version__ = "4.0.1"
+__version__ = "5.0.0"
