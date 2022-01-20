@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v5.0.0 - 2022-01-19
+
+## Added
+
+- Functions that read SQL from strings of multiple statements, see `pydbtools.read_sql_queries` and `pydbtools.read_sql_queries_gen`.
+- Functions that delete database entities and the S3 data for those entities, see `pydbtools.delete_database_and_data`, `pydbtools.delete_table_and_data` and `pydbtools.delete_partitions_and_data`.
+
+## Changed
+
+- Temporary database names are now compatible with EKS.
+- `ctas_approach` now defaults to `True`, the default behaviour for `awswrangler`, using a temporary database.
+- Queries automatically use values for `pyarrow_additional_kwargs` that solve [this awswrangler issue](https://github.com/awslabs/aws-data-wrangler/issues/592)
 
 ## v4.0.1 - 2021-09-24
 

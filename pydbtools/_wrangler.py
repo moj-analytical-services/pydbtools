@@ -5,6 +5,9 @@ import sqlparse
 import warnings
 import logging
 import pprint
+import pandas as pd
+import re
+from typing import Iterator, Optional
 
 import inspect
 import functools
@@ -12,6 +15,7 @@ import functools
 from pydbtools.utils import (
     get_user_id_and_table_dir,
     get_database_name_from_userid,
+    get_database_name_from_sql,
     clean_query,
     get_default_args,
     get_boto_session,
@@ -52,7 +56,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
 
         # Create a db flag
         database_flag = "database" in sig.parameters and (
-            argmap.get("database", "__temp__").lower() == "__temp__"
+            argmap.get("database", "__temp__") in ["__temp__", "__TEMP__"]
         )
 
         # If wrapper allows boto3 session being defined by user
@@ -98,9 +102,28 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             # Set s3 to default s3 path
             argmap["s3_output"] = s3_output
 
-        # Set ctas_approach to False if not set
-        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
-            argmap["ctas_approach"] = False
+        # Set ctas_approach to True if not set.
+        # Although awswrangler does this by default, we want to ensure
+        # that timestamps are read in correctly to pandas using pyarrow.
+        # Therefore forcing the default option to be True incase future versions
+        # of wrangler change their default behaviour.
+        if (
+            "ctas_approach" in sig.parameters
+            and argmap.get("ctas_approach") is None
+        ):
+            argmap["ctas_approach"] = True
+
+        # Set database to None or set to keyword temp when not needed
+        if database_flag:
+            if "ctas_approach" in sig.parameters and argmap["ctas_approach"]:
+                argmap["database"] = temp_db_name
+                _ = _create_temp_database(
+                    temp_db_name, boto3_session=boto3_session
+                )
+            elif argmap.get("database", "").lower() == "__temp__":
+                argmap["database"] = temp_db_name
+            else:
+                argmap["database"] = None
 
         # Fix sql before it is passed to athena
         if "sql" in argmap:
@@ -108,17 +131,25 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
                 argmap["sql"], temp_db_name
             )
 
-        # Set database to None or set to keyword temp when not needed
-        if database_flag:
-            if "ctas_approach" in sig.parameters and argmap.get(
-                "ctas_approach", sig.parameters["ctas_approach"].default
-            ):
-                argmap["database"] = temp_db_name
-                _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
-            elif argmap.get("database", "").lower() == "__temp__":
-                argmap["database"] = temp_db_name
-            else:
-                argmap["database"] = None
+        if (
+            "sql" in sig.parameters
+            and "database" in sig.parameters
+            and argmap.get("database") is None
+        ):
+            argmap["database"] = get_database_name_from_sql(
+                argmap.get("sql", "")
+            )
+
+        # Set pyarrow_additional_kwargs
+        if (
+            "pyarrow_additional_kwargs" in argmap
+            and argmap.get("pyarrow_additional_kwargs", None) is None
+        ):
+            argmap["pyarrow_additional_kwargs"] = {
+                "coerce_int96_timestamp_unit": "ms",
+                "timestamp_as_object": True,
+            }
+
         logger.debug(f"Modifying function {func.__name__}")
         logger.debug(pprint.pformat(dict(argmap)))
         return func(**argmap)
@@ -154,14 +185,16 @@ def start_query_execution_and_wait(sql, *args, **kwargs):
     # to call the original unwrapped athena fun to ensure the wrapper fun
     # is not called again
     query_execution_id = ath.start_query_execution(sql, *args, **kwargs)
-    return ath.wait_query(query_execution_id, boto3_session=kwargs.get("boto3_session"))
+    return ath.wait_query(
+        query_execution_id, boto3_session=kwargs.get("boto3_session")
+    )
 
 
 def check_sql(sql: str):
     """
     Validates sql to confirm it is a select statement
     """
-    parsed = sqlparse.parse(clean_query(sql, {"strip_comments": True}))
+    parsed = sqlparse.parse(clean_query(sql))
     i = 0
     for p in parsed:
         if p.get_type() != "SELECT" or i > 0:
@@ -199,13 +232,17 @@ def _create_temp_database(
     region_name = _set_region_name(region_name)
     if temp_db_name is None or temp_db_name.lower().strip() == "__temp__":
         user_id, _ = get_user_id_and_table_dir(
-            boto3_session=boto3_session, force_ec2=force_ec2, region_name=region_name
+            boto3_session=boto3_session,
+            force_ec2=force_ec2,
+            region_name=region_name,
         )
         temp_db_name = get_database_name_from_userid(user_id)
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
-    q_e_id = ath.start_query_execution(create_db_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        create_db_query, boto3_session=boto3_session
+    )
     return ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
@@ -255,7 +292,9 @@ def create_temp_table(
 
     drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
 
-    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        drop_table_query, boto3_session=boto3_session
+    )
 
     _ = ath.wait_query(q_e_id, boto3_session=boto3_session)
 
@@ -272,3 +311,196 @@ def create_temp_table(
     q_e_id = ath.start_query_execution(ctas_query, boto3_session=boto3_session)
 
     ath.wait_query(q_e_id, boto3_session=boto3_session)
+
+
+def _create_temp_table_in_sql(sql: str) -> bool:
+    """
+    Allows the user to write SQL of the format
+    CREATE TEMP TABLE tablename AS (...)
+
+    Args:
+        sql (str):
+            An SQL query.
+
+    Returns:
+        A bool indicating whether a temporary table was
+        created (True) or whether the SQL still needs to
+        be processed (False).
+    """
+
+    sql = clean_query(sql, fmt_opts={"strip_comments": True})
+    m = re.fullmatch(
+        r"create\s+temp\s+table\s+(\S+)\s+as\s+(.*)", sql, flags=re.IGNORECASE
+    )
+    if m:
+        table_name = m.group(1)
+        table_sql = m.group(2)
+
+        # Remove parentheses from the SQL
+        m = re.fullmatch(r"\((.*)\)", table_sql)
+        if m:
+            table_sql = m.group(1)
+
+        create_temp_table(table_sql, table_name)
+        return True
+    else:
+        return False
+
+
+def read_sql_queries(sql: str) -> Optional[pd.DataFrame]:
+    """
+    Reads a number of SQL statements and returns the result of
+    the last select statement as a dataframe.
+    Temporary tables can be created using
+    CREATE TEMP TABLE tablename AS (sql query)
+    and accessed using __temp__ as the database.
+
+    Args:
+        sql (str): SQL commands
+
+    Returns:
+        An iterator of Pandas DataFrames.
+
+    Example:
+        If the file eg.sql contains the SQL code
+            create temp table A as (
+                select * from database.table1
+                where year = 2021
+            );
+
+            create temp table B as (
+                select * from database.table2
+                where amount > 10
+            );
+
+            select * from __temp__.A
+            left join __temp__.B
+            on A.id = B.id;
+
+        df = read_sql_queries(open('eg.sql', 'r').read())
+    """
+
+    df = None
+    for df in read_sql_queries_gen(sql):
+        pass
+    return df
+
+
+def read_sql_queries_gen(sql: str) -> Iterator[pd.DataFrame]:
+    """
+    Reads a number of SQL statements and returns the result of
+    any select statements as a dataframe generator.
+    Temporary tables can be created using
+    CREATE TEMP TABLE tablename AS (sql query)
+    and accessed using __temp__ as the database.
+
+    Args:
+        sql (str): SQL commands
+
+    Returns:
+        An iterator of Pandas DataFrames.
+
+    Example:
+        If the file eg.sql contains the SQL code
+            create temp table A as (
+                select * from database.table1
+                where year = 2021
+            );
+
+            create temp table B as (
+                select * from database.table2
+                where amount > 10
+            );
+
+            select * from __temp__.A
+            left join __temp__.B
+            on A.id = B.id;
+
+            select * from __temp__.A
+            where country = 'UK'
+
+        df_iter = read_sql_queries(open('eg.sql', 'r').read())
+        df1 = next(df_iter)
+        df2 = next(df_iter)
+    """
+
+    for query in sqlparse.parse(sql):
+        if not _create_temp_table_in_sql(str(query)):
+            if query.get_type() == "SELECT":
+                yield read_sql_query(str(query))
+            else:
+                start_query_execution_and_wait(str(query))
+
+
+@init_athena_params(allow_boto3_session=True)
+def delete_table_and_data(table: str, database: str, boto3_session=None):
+    """
+    Deletes both a table from an Athena database and the underlying data on S3.
+
+    Args:
+        table (str): The table name to drop.
+        database (str): The database name.
+    """
+
+    path = wr.catalog.get_table_location(
+        database=database, table=table, boto3_session=boto3_session
+    )
+    wr.s3.delete_objects(path, boto3_session=boto3_session)
+    wr.catalog.delete_table_if_exists(
+        database=database, table=table, boto3_session=boto3_session
+    )
+
+
+@init_athena_params(allow_boto3_session=True)
+def delete_database_and_data(database: str, boto3_session=None):
+    """
+    Deletes both an Athena database and the underlying data on S3.
+
+    Args:
+        database (str): The database name to drop.
+    """
+
+    for table in wr.catalog.get_tables(
+        database=database, boto3_session=boto3_session
+    ):
+        delete_table_and_data(
+            table["Name"], database, boto3_session=boto3_session
+        )
+    wr.catalog.delete_database(database, boto3_session=boto3_session)
+
+
+@init_athena_params(allow_boto3_session=True)
+def delete_partitions_and_data(
+    database: str, table: str, expression: str, boto3_session=None
+):
+    """
+    Deletes partitions and the underlying data on S3 from an Athena
+    database table matching an expression.
+
+    Args:
+        database (str): The database name.
+        table (str): The table name.
+        expression (str): The expression to match.
+
+    Please see
+    https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/glue.html#Glue.Client.get_partitions # noqa
+    for instructions on the expression construction, but at a basic level
+    you can use SQL syntax on your partition columns.
+
+    Examples:
+    delete_partitions_and_data("my_database", "my_table", "year = 2020 and month = 5")
+    """
+
+    matched_partitions = wr.catalog.get_partitions(
+        database, table, expression=expression, boto3_session=boto3_session
+    )
+    # Delete data at partition locations
+    for location in matched_partitions:
+        wr.s3.delete_objects(location, boto3_session=boto3_session)
+    # Delete partitions
+    wr.catalog.delete_partitions(
+        table,
+        database,
+        list(matched_partitions.values()),
+        boto3_session=boto3_session,
+    )

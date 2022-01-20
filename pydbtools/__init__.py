@@ -14,6 +14,11 @@ from ._wrangler import (  # noqa: F401
     wait_query,
     start_query_execution_and_wait,
     create_temp_database,
+    read_sql_queries,
+    read_sql_queries_gen,
+    delete_partitions_and_data,
+    delete_table_and_data,
+    delete_database_and_data,
 )
 
 from ._sql_render import (  # noqa: F401
@@ -21,4 +26,4 @@ from ._sql_render import (  # noqa: F401
     render_sql_template,
 )
 
-__version__ = "4.0.1"
+__version__ = "5.0.0"
