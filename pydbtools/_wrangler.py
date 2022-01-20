@@ -350,7 +350,7 @@ def _create_temp_table_in_sql(sql: str) -> bool:
 def read_sql_queries(sql: str) -> Optional[pd.DataFrame]:
     """
     Reads a number of SQL statements and returns the result of
-    the first select statement as a dataframe.
+    the last select statement as a dataframe.
     Temporary tables can be created using
     CREATE TEMP TABLE tablename AS (sql query)
     and accessed using __temp__ as the database.
@@ -380,7 +380,10 @@ def read_sql_queries(sql: str) -> Optional[pd.DataFrame]:
         df = read_sql_queries(open('eg.sql', 'r').read())
     """
 
-    return next(read_sql_queries_gen(sql), None)
+    df = None
+    for df in read_sql_queries_gen(sql):
+        pass
+    return df
 
 
 def read_sql_queries_gen(sql: str) -> Iterator[pd.DataFrame]:
