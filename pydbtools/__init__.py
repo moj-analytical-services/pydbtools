@@ -19,6 +19,7 @@ from ._wrangler import (  # noqa: F401
     delete_partitions_and_data,
     delete_table_and_data,
     delete_database_and_data,
+    save_query_to_parquet,
 )
 
 from ._sql_render import (  # noqa: F401

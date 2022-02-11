@@ -504,3 +504,22 @@ def delete_partitions_and_data(
         list(matched_partitions.values()),
         boto3_session=boto3_session,
     )
+
+
+def save_query_to_parquet(sql: str, file_path: str) -> None:
+    """
+    Saves the results of a query to a parquet file
+    at a given location.
+    
+    Args:
+        sql (str): The SQL query.
+        file_path (str): The path to save the result to.
+        
+    Examples:
+    save_query_to_parquet("select * from my database.my_table", "result.parquet")
+    """
+    
+    df = read_sql_query(sql)
+    df.to_parquet(file_path)
+    
+    return None
