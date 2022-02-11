@@ -108,9 +108,7 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
         # where necessary
         new_query.append(
             "".join(
-                re.sub(
-                    "^__temp__", database_name, str(word), flags=re.IGNORECASE
-                )
+                re.sub("^__temp__", database_name, str(word), flags=re.IGNORECASE)
                 for word in fq
             )
         )
@@ -126,9 +124,7 @@ def get_user_id_and_table_dir(
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
-        boto3_session = get_boto_session(
-            force_ec2=force_ec2, region_name=region_name
-        )
+        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
 
     sts_client = boto3_session.client("sts")
     sts_resp = sts_client.get_caller_identity()
@@ -181,9 +177,7 @@ def get_boto_session(
     kwargs = {"region_name": region_name}
     if force_ec2:
         provider = InstanceMetadataProvider(
-            iam_role_fetcher=InstanceMetadataFetcher(
-                timeout=1000, num_attempts=2
-            )
+            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
         )
         creds = provider.load().get_frozen_credentials()
         kwargs["aws_access_key_id"] = creds.access_key
@@ -203,8 +197,6 @@ def get_boto_client(
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
-        boto3_session = get_boto_session(
-            force_ec2=force_ec2, region_name=region_name
-        )
+        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
 
     return boto3_session.client(client_name)
