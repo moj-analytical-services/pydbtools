@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
-- Function that saves the result ofn SQL query to a parquet file, see `pydbtools.save_query_as_parquet`.
+- Function that saves the result of SQL query to a parquet file, see `pydbtools.save_query_as_parquet`.
 
 ## v5.0.0 - 2022-01-19
 
