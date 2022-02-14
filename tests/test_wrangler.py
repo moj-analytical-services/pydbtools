@@ -18,9 +18,7 @@ def mock_create_temp_database(
     region_name: str = None,
 ):
     if isinstance(boto3_session, dict) and "events" in boto3_session:
-        boto3_session["events"].append(
-            f"_create_temp_database({temp_db_name})"
-        )
+        boto3_session["events"].append(f"_create_temp_database({temp_db_name})")
     return boto3_session
 
 
