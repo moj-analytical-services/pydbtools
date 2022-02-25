@@ -36,6 +36,9 @@ response = pydb.start_query_execution_and_wait("CREATE DATABASE IF NOT EXISTS my
 ```python
 pydb.create_temp_table("SELECT a_col, count(*) as n FROM a_database.table GROUP BY a_col", table_name="temp_table_1")
 df = pydb.read_sql_query("SELECT * FROM __temp__.temp_table_1 WHERE n < 10")
+
+pydb.database_to_temp_table(my_dataframe, "my_table")
+df = pydb.read_sql_query("select * from __temp__.my_table where year = 2022")
 ```
 
 ## Introduction
