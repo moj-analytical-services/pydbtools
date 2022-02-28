@@ -513,10 +513,10 @@ def s3_path_join(base: str, url: str, allow_fragments=True) -> str:
     """
     Joins a base S3 path and a URL. Acts the same as urllib.parse.urljoin,
     which doesn't work for S3 paths.
-    
+
     Args:
         base (str): Base S3 URL
-        url (str): 
+        url (str):
     """
     p = urlparse(base)
     return urlunparse(p._replace(path=urljoin(p.path, url, allow_fragments)))
@@ -525,7 +525,7 @@ def s3_path_join(base: str, url: str, allow_fragments=True) -> str:
 def dataframe_to_temp_table(df: pd.DataFrame, table: str) -> None:
     """
     Creates a temporary table from a dataframe.
-    
+
     Args:
         df (pandas.DataFrame): A pandas DataFrame
         table (str): The name of the table in the temporary database
@@ -534,9 +534,9 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str) -> None:
     db = get_database_name_from_userid(user_id)
     _create_temp_database(db)
     wr.s3.to_parquet(
-        df, 
+        df,
         path=s3_path_join(table_dir, f"{table}.parquet"),
         dataset=True,
         database=db,
-        table=table
+        table=table,
     )
