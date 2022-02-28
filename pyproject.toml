@@ -15,7 +15,6 @@ awswrangler = "^2.12.0"
 pyarrow = ">=5.0.0"
 Jinja2 = ""
 sql-metadata = "^2.3.0"
-ipykernel = "^6.9.1"
 
 [tool.poetry.dev-dependencies]
 pytest = ">=6.1"
