@@ -563,7 +563,7 @@ def dataframe_to_temp_table(df: pd.DataFrame, table_name: str, boto3_session = N
     meta.table_name = table_name
     meta.database_name = temp_db_name
     meta.file_format = "parquet"
-    meta.get_table_location = s3_path_join(table_path, f"{table_name}.snappy.parquet")
+    meta.table_location = s3_path_join(table_path, f"{table_name}.snappy.parquet")
 
     # make it work and PRAY
     GlueTable().generate_from_meta(meta)
