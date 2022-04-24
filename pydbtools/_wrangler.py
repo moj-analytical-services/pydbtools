@@ -14,7 +14,7 @@ import inspect
 import functools
 
 from mojap_metadata.converters.arrow_converter import ArrowConverter
-from mojap_metadata.converters.glue_converter import GlueTable
+from mojap_metadata.converters.glue_converter import GlueTable, GlueConverter
 from pyarrow import Schema
 from pydbtools.utils import (
     get_user_id_and_table_dir,
@@ -550,20 +550,16 @@ def dataframe_to_temp_table(df: pd.DataFrame, table_name: str, boto3_session = N
         df,
         path=s3_path_join(table_path, f"{table_name}.snappy.parquet"),
         dataset=True,
-        database=temp_db_name,
-        table=table_name,
     )
 
-
-    # use GlueTable and Metadata to overlay
+    # overlay
     arrow_schema = Schema.from_pandas(df)
     meta = ArrowConverter().generate_to_meta(arrow_schema)
 
-    # set required attributes
-    meta.table_name = table_name
-    meta.database_name = temp_db_name
-    meta.file_format = "parquet"
-    meta.table_location = s3_path_join(table_path, f"{table_name}.snappy.parquet")
+    boto_dict = GlueConverter().generate_from_meta(
+        meta, database_name=temp_db_name,
+        table_location=table_path
+    )
 
-    # make it work and PRAY
-    GlueTable().generate_from_meta(meta)
+    gc = boto3_session.client("glue")
+    gc.create_table(**boto_dict)
