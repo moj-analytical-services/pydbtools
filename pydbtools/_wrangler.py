@@ -522,6 +522,7 @@ def s3_path_join(base: str, url: str, allow_fragments=True) -> str:
     return urlunparse(p._replace(path=urljoin(p.path, url, allow_fragments)))
 
 
+@init_athena_params
 def dataframe_to_temp_table(df: pd.DataFrame, table: str) -> None:
     """
     Creates a temporary table from a dataframe.
