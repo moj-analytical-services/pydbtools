@@ -555,6 +555,7 @@ def dataframe_to_temp_table(df: pd.DataFrame, table_name: str, boto3_session = N
     # overlay
     arrow_schema = Schema.from_pandas(df)
     meta = ArrowConverter().generate_to_meta(arrow_schema)
+    meta.file_format = "parquet"
 
     boto_dict = GlueConverter().generate_from_meta(
         meta, database_name=temp_db_name,
