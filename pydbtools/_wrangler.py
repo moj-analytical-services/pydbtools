@@ -526,13 +526,13 @@ def s3_path_join(base: str, url: str, allow_fragments=True) -> str:
 
 
 @init_athena_params
-def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session = None, **kwargs) -> None:
+def dataframe_to_temp_table(df: pd.DataFrame, table_name: str, boto3_session = None, **kwargs) -> None:
     """
     Creates a temporary table from a dataframe.
 
     Args:
         df (pandas.DataFrame): A pandas DataFrame
-        table (str): The name of the table in the temporary database
+        table_name (str): The name of the table in the temporary database
     """
 
     # Create named stuff
@@ -547,7 +547,7 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session = None, 
         path=table_path,
         dataset=True,
         database=temp_db_name,
-        table=table,
+        table=table_name,
     )
 
     # schema overlay time so first drop the table:
