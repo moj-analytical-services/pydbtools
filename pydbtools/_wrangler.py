@@ -542,17 +542,18 @@ def dataframe_to_temp_table(df: pd.DataFrame, table_name: str, boto3_session = N
     temp_db_name = get_database_name_from_userid(user_id)
     _create_temp_database(temp_db_name)
 
+    # get rid
+    drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
+    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
+
     wr.s3.to_parquet(
         df,
-        path=table_path,
+        path=s3_path_join(table_path, f"{table_name}.snappy.parquet",
         dataset=True,
         database=temp_db_name,
         table=table_name,
     )
 
-    # schema overlay time so first drop the table:
-    drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
-    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
 
     # use GlueTable and Metadata to overlay
     arrow_schema = Schema.from_pandas(df)
