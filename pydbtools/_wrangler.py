@@ -548,7 +548,7 @@ def dataframe_to_temp_table(df: pd.DataFrame, table_name: str, boto3_session = N
 
     wr.s3.to_parquet(
         df,
-        path=s3_path_join(table_path, f"{table_name}.snappy.parquet",
+        path=s3_path_join(table_path, f"{table_name}.snappy.parquet"),
         dataset=True,
         database=temp_db_name,
         table=table_name,
