@@ -13,6 +13,9 @@ from urllib.parse import urlparse, urljoin, urlunparse
 import inspect
 import functools
 
+from mojap_metadata.converters.arrow_converter import ArrowConverter
+from mojap_metadata.converters.glue_converter import GlueTable
+from pyarrow import Schema
 from pydbtools.utils import (
     get_user_id_and_table_dir,
     get_database_name_from_userid,
@@ -523,7 +526,7 @@ def s3_path_join(base: str, url: str, allow_fragments=True) -> str:
 
 
 @init_athena_params
-def dataframe_to_temp_table(df: pd.DataFrame, table: str, **kwargs) -> None:
+def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session = None, **kwargs) -> None:
     """
     Creates a temporary table from a dataframe.
 
@@ -531,13 +534,35 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, **kwargs) -> None:
         df (pandas.DataFrame): A pandas DataFrame
         table (str): The name of the table in the temporary database
     """
-    user_id, table_dir = get_user_id_and_table_dir()
-    db = get_database_name_from_userid(user_id)
-    _create_temp_database(db)
+
+    # Create named stuff
+    user_id, out_path = get_user_id_and_table_dir(boto3_session=boto3_session)
+    db_path = s3_path_join(out_path, "__athena_temp_db__/")
+    table_path = s3_path_join(db_path, table_name)
+    temp_db_name = get_database_name_from_userid(user_id)
+    _create_temp_database(temp_db_name)
+
     wr.s3.to_parquet(
         df,
-        path=s3_path_join(table_dir, "__athena_temp_db__/", f"{table}.parquet"),
+        path=table_path,
         dataset=True,
-        database=db,
+        database=temp_db_name,
         table=table,
     )
+
+    # schema overlay time so first drop the table:
+    drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
+    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
+
+    # use GlueTable and Metadata to overlay
+    arrow_schema = Schema.from_pandas(df)
+    meta = ArrowConverter().generate_to_meta(arrow_schema)
+
+    # set required attributes
+    meta.table_name = table_name
+    meta.database_name = temp_db_name
+    meta.file_format = "parquet"
+    meta.get_table_location = table_path
+
+    # make it work and PRAY
+    GlueTable().generate_from_meta(meta)
