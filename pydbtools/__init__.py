@@ -28,4 +28,4 @@ from ._sql_render import (  # noqa: F401
     render_sql_template,
 )
 
-__version__ = "5.2.0"
+__version__ = "5.2.1"

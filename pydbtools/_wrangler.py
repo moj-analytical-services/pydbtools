@@ -522,7 +522,8 @@ def s3_path_join(base: str, url: str, allow_fragments=True) -> str:
     return urlunparse(p._replace(path=urljoin(p.path, url, allow_fragments)))
 
 
-def dataframe_to_temp_table(df: pd.DataFrame, table: str) -> None:
+@init_athena_params(allow_boto3_session=True)
+def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) -> None:
     """
     Creates a temporary table from a dataframe.
 
@@ -533,10 +534,18 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str) -> None:
     user_id, table_dir = get_user_id_and_table_dir()
     db = get_database_name_from_userid(user_id)
     _create_temp_database(db)
+    # Clean up existing table if necessary
+    path = s3_path_join(table_dir, f"{table}.parquet")
+    wr.catalog.delete_table_if_exists(
+        database=db, table=table, boto3_session=boto3_session
+    )
+    wr.s3.delete_objects(path)
+    # Write table
     wr.s3.to_parquet(
         df,
-        path=s3_path_join(table_dir, f"{table}.parquet"),
+        path=path,
         dataset=True,
         database=db,
         table=table,
+        boto3_session=boto3_session,
     )
