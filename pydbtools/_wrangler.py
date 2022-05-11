@@ -533,10 +533,16 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str) -> None:
     user_id, table_dir = get_user_id_and_table_dir()
     db = get_database_name_from_userid(user_id)
     _create_temp_database(db)
-    delete_table_and_data(table, db)
+    # Clean up existing table if necessary
+    path=s3_path_join(table_dir, f"{table}.parquet")
+    wr.catalog.delete_table_if_exists(
+        database=database, table=table, boto3_session=boto3_session
+    )
+    wr.s3.delete_objects(path, boto3_session=boto3_session)
+    # Write table
     wr.s3.to_parquet(
         df,
-        path=s3_path_join(table_dir, f"{table}.parquet"),
+        path=path,
         dataset=True,
         database=db,
         table=table,
