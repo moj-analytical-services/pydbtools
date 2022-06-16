@@ -538,9 +538,9 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
     wr.catalog.delete_table_if_exists(
         database=db, table=table, boto3_session=boto3_session
     )
-    ## Write table
-    # Include timestamp in path to avoid permissions problems with
-    # previous sessions
+    # Write table
+    # - Include timestamp in path to avoid permissions problems with
+    #   previous sessions
     ts = str(time.time()).replace(".", "")
     path = s3_path_join(table_dir, f"{ts}/{table}.parquet")
     wr.s3.to_parquet(
