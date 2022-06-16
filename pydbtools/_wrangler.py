@@ -9,7 +9,7 @@ import pandas as pd
 import re
 from typing import Iterator, Optional
 from urllib.parse import urlparse, urljoin, urlunparse
-
+import time
 import inspect
 import functools
 
@@ -535,12 +535,14 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
     db = get_database_name_from_userid(user_id)
     _create_temp_database(db)
     # Clean up existing table if necessary
-    path = s3_path_join(table_dir, f"{table}.parquet")
     wr.catalog.delete_table_if_exists(
         database=db, table=table, boto3_session=boto3_session
     )
-    wr.s3.delete_objects(path)
-    # Write table
+    ## Write table
+    # Include timestamp in path to avoid permissions problems with
+    # previous sessions
+    ts = str(time.time()).replace(".", "")
+    path = s3_path_join(table_dir, f"{ts}/{table}.parquet")
     wr.s3.to_parquet(
         df,
         path=path,
@@ -548,4 +550,5 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
         database=db,
         table=table,
         boto3_session=boto3_session,
+        mode="overwrite"
     )
