@@ -277,8 +277,12 @@ def create_temp_table(
 
     _ = create_temp_database(temp_db_name, boto3_session)
 
-    # Clear out table every time
-    wr.s3.delete_objects(table_path, boto3_session=boto3_session)
+    # Clear out table every time, making sure other tables aren't being
+    # cleared out
+    wr.s3.delete_objects(
+        table_path if table_path.endswith("/") else table_path + "/",
+        boto3_session=boto3_session,
+    )
 
     drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
 
@@ -550,5 +554,5 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
         database=db,
         table=table,
         boto3_session=boto3_session,
-        mode="overwrite"
+        mode="overwrite",
     )
