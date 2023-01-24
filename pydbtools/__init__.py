@@ -21,7 +21,7 @@ from ._wrangler import (  # noqa: F401
     delete_database_and_data,
     save_query_to_parquet,
     dataframe_to_temp_table,
-    show_tables
+    tables
 )
 
 from ._sql_render import (  # noqa: F401
