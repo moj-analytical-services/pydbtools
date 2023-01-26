@@ -164,6 +164,7 @@ show_create_table = init_athena_params(ath.show_create_table)
 start_query_execution = init_athena_params(ath.start_query_execution)
 stop_query_execution = init_athena_params(ath.stop_query_execution)
 wait_query = init_athena_params(ath.wait_query)
+tables = init_athena_params(wr.catalog.tables)
 
 
 @init_athena_params

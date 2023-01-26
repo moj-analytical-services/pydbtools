@@ -21,6 +21,7 @@ from ._wrangler import (  # noqa: F401
     delete_database_and_data,
     save_query_to_parquet,
     dataframe_to_temp_table,
+    tables
 )
 
 from ._sql_render import (  # noqa: F401
@@ -28,4 +29,4 @@ from ._sql_render import (  # noqa: F401
     render_sql_template,
 )
 
-__version__ = "5.3.2"
+__version__ = "5.4.0"
