@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v5.3.2 - 2022-10-07
+
+- Updated dependencies.
+
+## v5.3.1 - 2022-07-22
+
+- Fix issue when creating temporary tables where tables which start with another table's name could have their data deleted.
+
+## v5.3.0 - 2022-07-13
+
+- No longer supporting Python 3.7 due to numpy security issue.
+
 ## v5.2.0 - 2022-02-28
 
 ## Added

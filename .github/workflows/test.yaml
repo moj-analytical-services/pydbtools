@@ -8,26 +8,26 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.7, 3.8]
+        python-version: ["3.8", "3.9", "3.10"]
         poetry-install: [from-lock-file, fresh-install]
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies ${{ matrix.poetry-install }}
-      run: |
-        if [ "${{ matrix.poetry-install }}" == "from-lock-file" ]; then
-          echo "Installing dependencies from lock file"
-        else
-          echo "Removing lock file and installing latest possible dependencies"
-          rm poetry.lock
-        fi
-        python -m pip install --upgrade pip
-        pip install poetry
-        poetry config virtualenvs.create false \
-          && poetry install --no-interaction --no-ansi
-    - name: Run Tests
-      run: |
-        pytest tests/ -vv
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies ${{ matrix.poetry-install }}
+        run: |
+          if [ "${{ matrix.poetry-install }}" == "from-lock-file" ]; then
+            echo "Installing dependencies from lock file"
+          else
+            echo "Removing lock file and installing latest possible dependencies"
+            rm poetry.lock
+          fi
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry config virtualenvs.create false \
+            && poetry install --no-interaction --no-ansi
+      - name: Run Tests
+        run: |
+          pytest tests/ -vv
