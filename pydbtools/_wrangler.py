@@ -7,11 +7,12 @@ import logging
 import pprint
 import pandas as pd
 import re
-from typing import Iterator, Optional
+from typing import Iterator, Optional, List
 from urllib.parse import urlparse, urljoin, urlunparse
 import time
 import inspect
 import functools
+from arrow_pd_parser import reader
 
 from pydbtools.utils import (
     get_user_id_and_table_dir,
@@ -539,15 +540,38 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
     user_id, table_dir = get_user_id_and_table_dir()
     db = get_database_name_from_userid(user_id)
     _create_temp_database(db)
+
+    # Include timestamp in path to avoid permissions problems with
+    # previous sessions
+    ts = str(time.time()).replace(".", "")
+    path = s3_path_join(table_dir, f"{ts}/{table}.parquet")
+    dataframe_to_table(df, db, table, path)
+
+
+@init_athena_params(allow_boto3_session=True)
+def dataframe_to_table(
+    df: pd.DataFrame,
+    database: str,
+    table: str,
+    location: str,
+    boto3_session=None,
+    **kwargs,
+) -> None:
+    """
+    Creates a table from a dataframe.
+
+    Args:
+        df (pandas.DataFrame): A pandas DataFrame
+        database (str): Database name
+        table (str): Table name
+        location (str): S3 path to where the table should be stored
+    """
+
     # Clean up existing table if necessary
     wr.catalog.delete_table_if_exists(
         database=db, table=table, boto3_session=boto3_session
     )
     # Write table
-    # - Include timestamp in path to avoid permissions problems with
-    #   previous sessions
-    ts = str(time.time()).replace(".", "")
-    path = s3_path_join(table_dir, f"{ts}/{table}.parquet")
     wr.s3.to_parquet(
         df,
         path=path,
@@ -556,4 +580,68 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
         table=table,
         boto3_session=boto3_session,
         mode="overwrite",
+        **kwargs,
     )
+
+
+def create_database(database: str, **kwargs) -> bool:
+    """
+    Creates a new database.
+
+    Args:
+        database (str): The name of the database
+
+    Returns:
+        False if the database already exists, True if
+        it has been created.
+    """
+
+    if database in wr.catalog.get_databases():
+        return False
+    wr.catalog.create_database(database, **kwargs)
+    return True
+
+
+def file_to_table(
+    path: str,
+    database: str,
+    table: str,
+    location: str,
+    mode: str = "overwrite",
+    partition_cols: Optional[List[str]] = None,
+    **kwargs,
+) -> None:
+    """
+    Writes a file to a database table.
+
+    Args:
+        path (str): The location of the file
+        database (str): database name
+        table (str): table name
+        location (str): s3 file path to table
+        mode (str): "overwrite" (default), "append"
+        partitiopn_cols (List[str]):
+        **kwargs: arguments for arrow_pd_parser.reader.read
+    """
+
+    dfs = reader.read(path, **kwargs)
+    if isinstance(df, pd.DataFrame):
+        # Convert single dataframe to iterator
+        dfs = iter([dfs])
+    elif mode == "overwrite_partitions":
+        raise ValueError(
+            "overwrite_partitions and a set chunksize can't be used at the same time"
+        )
+
+    for df in dfs:
+        wr.s3.to_parquet(
+            df,
+            path=location,
+            dataset=True,
+            partition_cols=partition_cols,
+            mode=mode,
+            database=database,
+            table=table,
+            compression="snappy",
+        )
+        mode = "append"
