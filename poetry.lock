@@ -169,7 +169,7 @@ crt = ["awscrt (==0.14.0)"]
 
 [[package]]
 name = "certifi"
-version = "2022.9.24"
+version = "2022.12.7"
 description = "Python package for providing Mozilla's CA Bundle."
 category = "main"
 optional = false
@@ -553,7 +553,7 @@ tests = ["flake8 (>=3.7.7)", "pytest (>=4.6.9)", "pytest-cov (>=2.6.1)", "pytest
 name = "py"
 version = "1.11.0"
 description = "library with cross-python path, ini-parsing, io, code, log facilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
@@ -854,7 +854,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11" # wrangler dependency
-content-hash = "d35822cfabf41f38a671e7edcf1ca2cb36d3f89f976351084ad2b22b5abe7ad1"
+content-hash = "abd29c643aa0635530c62fb114633ad0f2cae5cbd30dd6071dccf3899cb58035"
 
 [metadata.files]
 aenum = []
