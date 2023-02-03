@@ -8,7 +8,6 @@ import pprint
 import pandas as pd
 import re
 from typing import Iterator, Optional, List
-from urllib.parse import urlparse, urljoin, urlunparse
 import time
 import inspect
 import functools
@@ -23,6 +22,7 @@ from pydbtools.utils import (
     get_boto_session,
     replace_temp_database_name_reference,
     _set_region_name,
+    s3_path_join
 )
 
 
@@ -247,7 +247,7 @@ def create_temp_table(
     region_name: str = None,
 ):
     """
-    Create a table inside the database from create database
+    Create a table inside the temporary database from create table
 
     Args:
         sql (str):
@@ -307,6 +307,38 @@ def create_temp_table(
     ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
+create_ctas_table = init_athena_params(wr.ath.create_ctas_table, allow_boto3_session=True)
+
+
+def create_table(    
+    sql: str,
+    database: str,
+    table: str,
+    location: str,
+    partition_cols: Optional[List[str]] = None,
+    boto3_session=None):
+    """
+    Create a table a database from a SELECT statement
+
+    Args:
+        sql (str): SQL starting with a WITH or SELECT clause
+        database (str): Database name
+        table (str): Table name
+        location (str): S3 path to where the table should be stored
+        partition_cols (List[str]): partition columns (optional)
+    """
+    return create_ctas_table(
+        sql=sql, 
+        ctas_database=database, 
+        ctas_table=table, 
+        s3_output=s3_path_join(location, table + ".parquet"),
+        partitioning_info=partition_cols,
+        wait=True,
+        boto3_session=boto3_session
+    )
+            
+
+
 def _create_temp_table_in_sql(sql: str) -> bool:
     """
     Allows the user to write SQL of the format
@@ -340,7 +372,7 @@ def _create_temp_table_in_sql(sql: str) -> bool:
     else:
         return False
 
-
+    
 def read_sql_queries(sql: str) -> Optional[pd.DataFrame]:
     """
     Reads a number of SQL statements and returns the result of
@@ -434,15 +466,23 @@ def delete_table_and_data(table: str, database: str, boto3_session=None):
     Args:
         table (str): The table name to drop.
         database (str): The database name.
+        
+    Returns:
+        True if table exists and is deleted, False if table
+        does not exist
     """
 
-    path = wr.catalog.get_table_location(
-        database=database, table=table, boto3_session=boto3_session
-    )
-    wr.s3.delete_objects(path, boto3_session=boto3_session)
-    wr.catalog.delete_table_if_exists(
-        database=database, table=table, boto3_session=boto3_session
-    )
+    if table in list(tables(database=database, limit=None)['Table']):
+        path = wr.catalog.get_table_location(
+            database=database, table=table, boto3_session=boto3_session
+        )
+        wr.s3.delete_objects(path, boto3_session=boto3_session)
+        wr.catalog.delete_table_if_exists(
+            database=database, table=table, boto3_session=boto3_session
+        )
+        return True
+    else:
+        return False
 
 
 @init_athena_params(allow_boto3_session=True)
@@ -452,11 +492,17 @@ def delete_database_and_data(database: str, boto3_session=None):
 
     Args:
         database (str): The database name to drop.
+        
+    Returns:
+        True if database exists and is deleted, False if database 
+        does not exist
     """
-
+    if database not in (db['Name'] for db in wr.catalog.get_databases()):
+        return False
     for table in wr.catalog.get_tables(database=database, boto3_session=boto3_session):
         delete_table_and_data(table["Name"], database, boto3_session=boto3_session)
     wr.catalog.delete_database(database, boto3_session=boto3_session)
+    return True
 
 
 @init_athena_params(allow_boto3_session=True)
@@ -515,19 +561,6 @@ def save_query_to_parquet(sql: str, file_path: str) -> None:
     return None
 
 
-def s3_path_join(base: str, url: str, allow_fragments=True) -> str:
-    """
-    Joins a base S3 path and a URL. Acts the same as urllib.parse.urljoin,
-    which doesn't work for S3 paths.
-
-    Args:
-        base (str): Base S3 URL
-        url (str):
-    """
-    p = urlparse(base)
-    return urlunparse(p._replace(path=urljoin(p.path, url, allow_fragments)))
-
-
 @init_athena_params(allow_boto3_session=True)
 def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) -> None:
     """
@@ -544,8 +577,8 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
     # Include timestamp in path to avoid permissions problems with
     # previous sessions
     ts = str(time.time()).replace(".", "")
-    path = s3_path_join(table_dir, f"{ts}/{table}.parquet")
-    dataframe_to_table(df, db, table, path)
+    path = s3_path_join(table_dir, ts, table)
+    dataframe_to_table(df, db, table, path, boto3_session=boto3_session)
 
 
 @init_athena_params(allow_boto3_session=True)
@@ -554,6 +587,8 @@ def dataframe_to_table(
     database: str,
     table: str,
     location: str,
+    mode: str = "overwrite",
+    partition_cols: Optional[List[str]] = None,
     boto3_session=None,
     **kwargs,
 ) -> None:
@@ -565,21 +600,21 @@ def dataframe_to_table(
         database (str): Database name
         table (str): Table name
         location (str): S3 path to where the table should be stored
+        mode (str): "overwrite" (default), "append", or "overwrite_partitions"
+        partition_cols (List[str]): partition columns (optional)
     """
 
-    # Clean up existing table if necessary
-    wr.catalog.delete_table_if_exists(
-        database=db, table=table, boto3_session=boto3_session
-    )
     # Write table
     wr.s3.to_parquet(
         df,
-        path=path,
+        path=s3_path_join(location, table + ".parquet"),
         dataset=True,
-        database=db,
+        database=database,
         table=table,
         boto3_session=boto3_session,
-        mode="overwrite",
+        mode=mode,
+        partition_cols=partition_cols,
+        compression="snappy",
         **kwargs,
     )
 
@@ -596,12 +631,13 @@ def create_database(database: str, **kwargs) -> bool:
         it has been created.
     """
 
-    if database in wr.catalog.get_databases():
+    if database in (db['Name'] for db in wr.catalog.get_databases()):
         return False
     wr.catalog.create_database(database, **kwargs)
     return True
 
 
+@init_athena_params(allow_boto3_session=True)
 def file_to_table(
     path: str,
     database: str,
@@ -609,23 +645,26 @@ def file_to_table(
     location: str,
     mode: str = "overwrite",
     partition_cols: Optional[List[str]] = None,
+    boto3_session=None,
     **kwargs,
 ) -> None:
     """
-    Writes a file to a database table.
+    Writes a csv, json, or parquet file to a database table.
 
     Args:
         path (str): The location of the file
         database (str): database name
         table (str): table name
         location (str): s3 file path to table
-        mode (str): "overwrite" (default), "append"
-        partitiopn_cols (List[str]):
+        mode (str): "overwrite" (default), "append", "overwrite_partitions"
+        partition_cols (List[str]): partition columns (optional)
         **kwargs: arguments for arrow_pd_parser.reader.read
+            e.g. use chunksize for very large files, metadata
+            to apply metadata
     """
 
     dfs = reader.read(path, **kwargs)
-    if isinstance(df, pd.DataFrame):
+    if isinstance(dfs, pd.DataFrame):
         # Convert single dataframe to iterator
         dfs = iter([dfs])
     elif mode == "overwrite_partitions":
@@ -634,14 +673,13 @@ def file_to_table(
         )
 
     for df in dfs:
-        wr.s3.to_parquet(
+        dataframe_to_table(
             df,
-            path=location,
-            dataset=True,
+            database,
+            table,
+            location,
             partition_cols=partition_cols,
             mode=mode,
-            database=database,
-            table=table,
-            compression="snappy",
+            boto3_session=boto3_session,
         )
         mode = "append"

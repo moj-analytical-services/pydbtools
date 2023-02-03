@@ -24,12 +24,15 @@ from ._wrangler import (  # noqa: F401
     tables,
     dataframe_to_table,
     create_database,
-    file_to_table
+    file_to_table,
+    create_table
 )
 
 from ._sql_render import (  # noqa: F401
     get_sql_from_file,
-    render_sql_template,
+    render_sql_template
 )
+
+from .utils import s3_path_join
 
 __version__ = "5.5.0"
