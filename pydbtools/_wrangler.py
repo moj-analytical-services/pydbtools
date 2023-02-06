@@ -22,7 +22,7 @@ from pydbtools.utils import (
     get_boto_session,
     replace_temp_database_name_reference,
     _set_region_name,
-    s3_path_join
+    s3_path_join,
 )
 
 
@@ -166,6 +166,7 @@ start_query_execution = init_athena_params(ath.start_query_execution)
 stop_query_execution = init_athena_params(ath.stop_query_execution)
 wait_query = init_athena_params(ath.wait_query)
 tables = init_athena_params(wr.catalog.tables)
+create_ctas_table = init_athena_params(ath.create_ctas_table, allow_boto3_session=True)
 
 
 @init_athena_params
@@ -307,18 +308,16 @@ def create_temp_table(
     ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
-create_ctas_table = init_athena_params(wr.ath.create_ctas_table, allow_boto3_session=True)
-
-
-def create_table(    
+def create_table(
     sql: str,
     database: str,
     table: str,
     location: str,
     partition_cols: Optional[List[str]] = None,
-    boto3_session=None):
+    boto3_session=None,
+):
     """
-    Create a table a database from a SELECT statement
+    Create a table in a database from a SELECT statement
 
     Args:
         sql (str): SQL starting with a WITH or SELECT clause
@@ -326,17 +325,17 @@ def create_table(
         table (str): Table name
         location (str): S3 path to where the table should be stored
         partition_cols (List[str]): partition columns (optional)
+        boto3_session: optional boto3 session
     """
     return create_ctas_table(
-        sql=sql, 
-        ctas_database=database, 
-        ctas_table=table, 
+        sql=sql,
+        ctas_database=database,
+        ctas_table=table,
         s3_output=s3_path_join(location, table + ".parquet"),
         partitioning_info=partition_cols,
         wait=True,
-        boto3_session=boto3_session
+        boto3_session=boto3_session,
     )
-            
 
 
 def _create_temp_table_in_sql(sql: str) -> bool:
@@ -372,7 +371,7 @@ def _create_temp_table_in_sql(sql: str) -> bool:
     else:
         return False
 
-    
+
 def read_sql_queries(sql: str) -> Optional[pd.DataFrame]:
     """
     Reads a number of SQL statements and returns the result of
@@ -466,13 +465,13 @@ def delete_table_and_data(table: str, database: str, boto3_session=None):
     Args:
         table (str): The table name to drop.
         database (str): The database name.
-        
+
     Returns:
         True if table exists and is deleted, False if table
         does not exist
     """
 
-    if table in list(tables(database=database, limit=None)['Table']):
+    if table in list(tables(database=database, limit=None)["Table"]):
         path = wr.catalog.get_table_location(
             database=database, table=table, boto3_session=boto3_session
         )
@@ -492,12 +491,12 @@ def delete_database_and_data(database: str, boto3_session=None):
 
     Args:
         database (str): The database name to drop.
-        
+
     Returns:
-        True if database exists and is deleted, False if database 
+        True if database exists and is deleted, False if database
         does not exist
     """
-    if database not in (db['Name'] for db in wr.catalog.get_databases()):
+    if database not in (db["Name"] for db in wr.catalog.get_databases()):
         return False
     for table in wr.catalog.get_tables(database=database, boto3_session=boto3_session):
         delete_table_and_data(table["Name"], database, boto3_session=boto3_session)
@@ -569,6 +568,7 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
     Args:
         df (pandas.DataFrame): A pandas DataFrame
         table (str): The name of the table in the temporary database
+        boto3_session: opeional boto3 sesssion
     """
     user_id, table_dir = get_user_id_and_table_dir()
     db = get_database_name_from_userid(user_id)
@@ -602,6 +602,8 @@ def dataframe_to_table(
         location (str): S3 path to where the table should be stored
         mode (str): "overwrite" (default), "append", or "overwrite_partitions"
         partition_cols (List[str]): partition columns (optional)
+        boto3_session: optional boto3 session
+        **kwargs: arguments for to_parquet
     """
 
     # Write table
@@ -631,7 +633,7 @@ def create_database(database: str, **kwargs) -> bool:
         it has been created.
     """
 
-    if database in (db['Name'] for db in wr.catalog.get_databases()):
+    if database in (db["Name"] for db in wr.catalog.get_databases()):
         return False
     wr.catalog.create_database(database, **kwargs)
     return True

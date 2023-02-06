@@ -25,13 +25,10 @@ from ._wrangler import (  # noqa: F401
     dataframe_to_table,
     create_database,
     file_to_table,
-    create_table
+    create_table,
 )
 
-from ._sql_render import (  # noqa: F401
-    get_sql_from_file,
-    render_sql_template
-)
+from ._sql_render import get_sql_from_file, render_sql_template  # noqa: F401
 
 from .utils import s3_path_join
 
