@@ -18,7 +18,9 @@ def mock_create_temp_database(
     region_name: str = None,
 ):
     if isinstance(boto3_session, dict) and "events" in boto3_session:
-        boto3_session["events"].append(f"_create_temp_database({temp_db_name})")
+        boto3_session["events"].append(
+            f"_create_temp_database({temp_db_name})"
+        )
     return boto3_session
 
 
@@ -62,8 +64,20 @@ def fun_with_sql_db_s3_ctas(
         ({}, fun_boto_only, [], None, False),
         ({"boto3_session": "boto3_session"}, fun_boto_only, [], None, True),
         ({}, fun_with_sql, ["get_user_id_and_table_dir"], None, False),
-        ({"sql": ""}, fun_with_sql, ["get_user_id_and_table_dir"], None, False),
-        ({}, fun_with_sql_and_db_s3, ["get_user_id_and_table_dir"], None, False),
+        (
+            {"sql": ""},
+            fun_with_sql,
+            ["get_user_id_and_table_dir"],
+            None,
+            False,
+        ),
+        (
+            {},
+            fun_with_sql_and_db_s3,
+            ["get_user_id_and_table_dir"],
+            None,
+            False,
+        ),
         (
             {"s3_output": "somewhere"},
             fun_with_sql_and_db_s3,
@@ -135,9 +149,12 @@ def fun_with_sql_db_s3_ctas(
 def test_init_athena_params(
     fun_params, fun, expected_events, expect_warns, returned_db, monkeypatch
 ):
-    monkeypatch.setattr("pydbtools._wrangler.get_boto_session", get_empty_boto_log)
     monkeypatch.setattr(
-        "pydbtools._wrangler.get_user_id_and_table_dir", mock_get_user_id_and_table_dir
+        "pydbtools._wrangler.get_boto_session", get_empty_boto_log
+    )
+    monkeypatch.setattr(
+        "pydbtools._wrangler.get_user_id_and_table_dir",
+        mock_get_user_id_and_table_dir,
     )
     monkeypatch.setattr(
         "pydbtools._wrangler.get_database_name_from_userid",
@@ -163,4 +180,6 @@ def test_init_athena_params(
         assert out.get("s3_output") == "s3://dummy/path/"
         assert out["database"] == returned_db
         if fun.__name__ == "fun_with_sql_db_s3_ctas":
-            assert out["ctas_approach"] == fun_params.get("ctas_approach", False)
+            assert out["ctas_approach"] == fun_params.get(
+                "ctas_approach", False
+            )

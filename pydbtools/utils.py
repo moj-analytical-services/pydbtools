@@ -2,6 +2,7 @@ from typing import Tuple, Optional
 import os
 import re
 import sqlparse
+from urllib.parse import urlparse, urljoin, urlunparse
 import sql_metadata
 import inspect
 import boto3
@@ -9,6 +10,7 @@ from botocore.credentials import (
     InstanceMetadataProvider,
     InstanceMetadataFetcher,
 )
+from functools import reduce
 
 
 # Set pydbtool params - if you were so inclined to change them
@@ -17,6 +19,25 @@ temp_database_name_prefix = "mojap_de_temp_"
 aws_default_region = os.getenv(
     "AWS_DEFAULT_REGION", os.getenv("AWS_REGION", "eu-west-1")
 )
+
+
+def s3_path_join(base: str, *urls: [str]):
+    return reduce(_s3_path_join, urls, base)
+
+
+def _s3_path_join(base: str, url: str, allow_fragments=True) -> str:
+    """
+    Joins a base S3 path and a URL. Acts the same as urllib.parse.urljoin,
+    which doesn't work for S3 paths.
+
+    Args:
+        base (str): Base S3 URL
+        url (str):
+    """
+    p = urlparse(base)
+    return urlunparse(
+        p._replace(path=urljoin(p.path, url, allow_fragments=True))
+    )
 
 
 def _set_aws_session_name():
@@ -33,6 +54,7 @@ def _get_role_name_from_env() -> str:
 
 def _set_region_name(region_name: str):
     if region_name is None:
+        os.environ["AWS_DEFAULT_REGION"] = aws_default_region
         return aws_default_region
     else:
         return region_name
@@ -108,7 +130,9 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
         # where necessary
         new_query.append(
             "".join(
-                re.sub("^__temp__", database_name, str(word), flags=re.IGNORECASE)
+                re.sub(
+                    "^__temp__", database_name, str(word), flags=re.IGNORECASE
+                )
                 for word in fq
             )
         )
@@ -124,11 +148,13 @@ def get_user_id_and_table_dir(
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
-        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
+        boto3_session = get_boto_session(
+            force_ec2=force_ec2, region_name=region_name
+        )
 
     sts_client = boto3_session.client("sts")
     sts_resp = sts_client.get_caller_identity()
-    out_path = os.path.join("s3://", bucket, sts_resp["UserId"])
+    out_path = s3_path_join("s3://" + bucket, sts_resp["UserId"])
     if out_path[-1] != "/":
         out_path += "/"
 
@@ -177,7 +203,9 @@ def get_boto_session(
     kwargs = {"region_name": region_name}
     if force_ec2:
         provider = InstanceMetadataProvider(
-            iam_role_fetcher=InstanceMetadataFetcher(timeout=1000, num_attempts=2)
+            iam_role_fetcher=InstanceMetadataFetcher(
+                timeout=1000, num_attempts=2
+            )
         )
         creds = provider.load().get_frozen_credentials()
         kwargs["aws_access_key_id"] = creds.access_key
@@ -197,6 +225,8 @@ def get_boto_client(
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
-        boto3_session = get_boto_session(force_ec2=force_ec2, region_name=region_name)
+        boto3_session = get_boto_session(
+            force_ec2=force_ec2, region_name=region_name
+        )
 
     return boto3_session.client(client_name)
