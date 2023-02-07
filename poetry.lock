@@ -140,14 +140,14 @@ lxml = ["lxml"]
 
 [[package]]
 name = "boto3"
-version = "1.26.64"
+version = "1.26.65"
 description = "The AWS SDK for Python"
 category = "main"
 optional = false
 python-versions = ">= 3.7"
 
 [package.dependencies]
-botocore = ">=1.29.64,<1.30.0"
+botocore = ">=1.29.65,<1.30.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.6.0,<0.7.0"
 
@@ -156,7 +156,7 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.29.64"
+version = "1.29.65"
 description = "Low-level, data-driven core of boto 3."
 category = "main"
 optional = false
@@ -856,7 +856,7 @@ testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "flake8 (<5)", "pytest-co
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11" # wrangler dependency
-content-hash = "e3765183596cb9c9c1686dde1e9f96e76a584de5a847270472b785b95acd4b1c"
+content-hash = "f121957dc5c337762cb57fabb243de268c2a849f08e691f18bfaa242dcb800ca"
 
 [metadata.files]
 aenum = []
