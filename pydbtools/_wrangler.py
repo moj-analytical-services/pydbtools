@@ -7,7 +7,7 @@ import logging
 import pprint
 import pandas as pd
 import re
-from typing import Iterator, Optional, List, Union
+from typing import Iterator, Optional, List
 import time
 import inspect
 import functools
@@ -107,16 +107,21 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
         # Set ctas_approach to True if not set.
         # Although awswrangler does this by default, we want to ensure
         # that timestamps are read in correctly to pandas using pyarrow.
-        # Therefore forcing the default option to be True incase future versions
-        # of wrangler change their default behaviour.
-        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
+        # Therefore forcing the default option to be True in case future
+        # versions of wrangler change their default behaviour.
+        if (
+            "ctas_approach" in sig.parameters
+            and argmap.get("ctas_approach") is None
+        ):
             argmap["ctas_approach"] = True
 
         # Set database to None or set to keyword temp when not needed
         if database_flag:
             if "ctas_approach" in sig.parameters and argmap["ctas_approach"]:
                 argmap["database"] = temp_db_name
-                _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
+                _ = _create_temp_database(
+                    temp_db_name, boto3_session=boto3_session
+                )
             elif argmap.get("database", "").lower() == "__temp__":
                 argmap["database"] = temp_db_name
             else:
@@ -133,7 +138,9 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             and "database" in sig.parameters
             and argmap.get("database") is None
         ):
-            argmap["database"] = get_database_name_from_sql(argmap.get("sql", ""))
+            argmap["database"] = get_database_name_from_sql(
+                argmap.get("sql", "")
+            )
 
         # Set pyarrow_additional_kwargs
         if (
@@ -166,7 +173,9 @@ start_query_execution = init_athena_params(ath.start_query_execution)
 stop_query_execution = init_athena_params(ath.stop_query_execution)
 wait_query = init_athena_params(ath.wait_query)
 tables = init_athena_params(wr.catalog.tables)
-create_ctas_table = init_athena_params(ath.create_ctas_table, allow_boto3_session=True)
+create_ctas_table = init_athena_params(
+    ath.create_ctas_table, allow_boto3_session=True
+)
 
 
 @init_athena_params
@@ -182,7 +191,9 @@ def start_query_execution_and_wait(sql, *args, **kwargs):
     # to call the original unwrapped athena fun to ensure the wrapper fun
     # is not called again
     query_execution_id = ath.start_query_execution(sql, *args, **kwargs)
-    return ath.wait_query(query_execution_id, boto3_session=kwargs.get("boto3_session"))
+    return ath.wait_query(
+        query_execution_id, boto3_session=kwargs.get("boto3_session")
+    )
 
 
 def check_sql(sql: str):
@@ -235,7 +246,9 @@ def _create_temp_database(
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
-    q_e_id = ath.start_query_execution(create_db_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        create_db_query, boto3_session=boto3_session
+    )
     return ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
@@ -260,14 +273,16 @@ def create_temp_table(
 
         force_ec2 (bool, optional):
             Boolean specifying if the user wants to force boto to get the
-            credentials from the EC2. This is for dbtools which is the R wrapper that
-            calls this package via reticulate and requires credentials to be refreshed
-            via the EC2 instance (and therefore sets this to True) - this is not
+            credentials from the EC2. This is for dbtools which is the R
+            wrapper that calls this package via reticulate and requires
+            credentials to be refreshed via the EC2 instance (and
+            therefore sets this to True) - this is not
             necessary when using this in Python. Default is False.
 
         region_name (str, optional):
             Name of the AWS region you want to run queries on. Defaults to
-            pydbtools.utils.aws_default_region (which if left unset is "eu-west-1").
+            pydbtools.utils.aws_default_region (which if left unset is
+            "eu-west-1").
     """
     region_name = _set_region_name(region_name)
     check_sql(sql)
@@ -289,7 +304,9 @@ def create_temp_table(
 
     drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
 
-    q_e_id = ath.start_query_execution(drop_table_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        drop_table_query, boto3_session=boto3_session
+    )
 
     _ = ath.wait_query(q_e_id, boto3_session=boto3_session)
 
@@ -498,8 +515,12 @@ def delete_database_and_data(database: str, boto3_session=None):
     """
     if database not in (db["Name"] for db in wr.catalog.get_databases()):
         return False
-    for table in wr.catalog.get_tables(database=database, boto3_session=boto3_session):
-        delete_table_and_data(table["Name"], database, boto3_session=boto3_session)
+    for table in wr.catalog.get_tables(
+        database=database, boto3_session=boto3_session
+    ):
+        delete_table_and_data(
+            table["Name"], database, boto3_session=boto3_session
+        )
     wr.catalog.delete_database(database, boto3_session=boto3_session)
     return True
 
@@ -551,7 +572,10 @@ def save_query_to_parquet(sql: str, file_path: str) -> None:
         file_path (str): The path to save the result to.
 
     Examples:
-    save_query_to_parquet("select * from my database.my_table", "result.parquet")
+    save_query_to_parquet(
+        "select * from my database.my_table",
+        "result.parquet"
+    )
     """
 
     df = read_sql_query(sql)
@@ -561,7 +585,9 @@ def save_query_to_parquet(sql: str, file_path: str) -> None:
 
 
 @init_athena_params(allow_boto3_session=True)
-def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) -> None:
+def dataframe_to_temp_table(
+    df: pd.DataFrame, table: str, boto3_session=None
+) -> None:
     """
     Creates a temporary table from a dataframe.
 
@@ -677,7 +703,8 @@ def file_to_table(
         dfs = iter([dfs])
     elif mode == "overwrite_partitions":
         raise ValueError(
-            "overwrite_partitions and a set chunksize can't be used at the same time"
+            "overwrite_partitions and a set chunksize "
+            + "can't be used at the same time"
         )
 
     for df in dfs:
