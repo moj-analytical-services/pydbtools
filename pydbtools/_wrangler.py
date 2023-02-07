@@ -7,7 +7,7 @@ import logging
 import pprint
 import pandas as pd
 import re
-from typing import Iterator, Optional, List
+from typing import Iterator, Optional, List, Union
 import time
 import inspect
 import functools
@@ -327,7 +327,7 @@ def create_table(
         partition_cols (List[str]): partition columns (optional)
         boto3_session: optional boto3 session
     """
-    return create_ctas_table(
+    return ath.create_ctas_table(
         sql=sql,
         ctas_database=database,
         ctas_table=table,
@@ -648,6 +648,8 @@ def file_to_table(
     mode: str = "overwrite",
     partition_cols: Optional[List[str]] = None,
     boto3_session=None,
+    chunksize=None,
+    metadata=None,
     **kwargs,
 ) -> None:
     """
@@ -660,12 +662,16 @@ def file_to_table(
         location (str): s3 file path to table
         mode (str): "overwrite" (default), "append", "overwrite_partitions"
         partition_cols (List[str]): partition columns (optional)
+        boto3_session: optional boto3 session
+        chunksize Union[int,str]: size of chunks in memory or rows,
+            e.g. "100MB", 100000
+        metadata: mojap_metadata instance
         **kwargs: arguments for arrow_pd_parser.reader.read
             e.g. use chunksize for very large files, metadata
             to apply metadata
     """
 
-    dfs = reader.read(path, **kwargs)
+    dfs = reader.read(path, chunksize=chunksize, metadata=metadata, **kwargs)
     if isinstance(dfs, pd.DataFrame):
         # Convert single dataframe to iterator
         dfs = iter([dfs])

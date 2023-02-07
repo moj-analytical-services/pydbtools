@@ -80,6 +80,35 @@ df.head()
 
 See [the example notebook](examples/create_temporary_tables.ipynb) for a more detailed example.
 
+### Create databases and tables
+
+```python
+import pydbtools as pydb
+import pandas as pd
+
+pydb.create_database("my_db")
+pydb.file_to_table(
+    "local_file_path/data.csv", 
+    database="my_db",
+    table="my_table",
+    location="s3://my_s3_location/my_table"
+)
+pydb.dataframe_to_table(
+    my_dataframe, 
+    database="my_db",
+    table="my_other_table",
+    location="s3://my_s3_location/my_other_table"
+)
+pydb.create_table(
+    "select * from my_db.my_other_table where month = 'March'",
+    database="my_db",
+    table="my_march_table",
+    location="s3://my_s3_location/my_other_table"
+)
+```
+
+See [the notebook on MoJAP tools](examples/mojap_tools_demo.ipynb) for more details.
+
 
 ### Run SQL from a string of statements or a file
 

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v5.5.0 - 2023-07-07
+
+## Added
+
+- Function that creates database, see `pydbtools.create_database`
+- Functions that create tables from files, SQL or dataframes, see `pydbtools.file_to_table`, `pydbtools.create_table` and `pydbtools.dataframe_to_table`.
+
 ## v5.4.0 - 2023-01-24
 
 - Added `tables` functionality to return dataframe of all tables and columns. Wrapped from wrangler.catalog.tables.
