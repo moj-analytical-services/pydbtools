@@ -346,6 +346,7 @@ def create_table(
     """
     return ath.create_ctas_table(
         sql=sql,
+        database=database,
         ctas_database=database,
         ctas_table=table,
         s3_output=s3_path_join(location, table + ".parquet"),
