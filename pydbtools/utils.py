@@ -11,6 +11,7 @@ from botocore.credentials import (
     InstanceMetadataFetcher,
 )
 from functools import reduce
+import awswrangler as wr
 
 
 # Set pydbtool params - if you were so inclined to change them
@@ -230,3 +231,8 @@ def get_boto_client(
         )
 
     return boto3_session.client(client_name)
+
+
+def get_table_location(database: str, table: str, **kwargs):
+    path = wr.catalog.get_table_location(database, table, **kwargs)
+    return path if path.endswith("/") else path + "/"

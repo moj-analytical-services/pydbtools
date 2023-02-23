@@ -23,6 +23,7 @@ from pydbtools.utils import (
     replace_temp_database_name_reference,
     _set_region_name,
     s3_path_join,
+    get_table_location,
 )
 
 
@@ -297,18 +298,7 @@ def create_temp_table(
 
     # Clear out table every time, making sure other tables aren't being
     # cleared out
-    wr.s3.delete_objects(
-        table_path if table_path.endswith("/") else table_path + "/",
-        boto3_session=boto3_session,
-    )
-
-    drop_table_query = f"DROP TABLE IF EXISTS {temp_db_name}.{table_name}"
-
-    q_e_id = ath.start_query_execution(
-        drop_table_query, boto3_session=boto3_session
-    )
-
-    _ = ath.wait_query(q_e_id, boto3_session=boto3_session)
+    delete_temp_table(table_name)
 
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
@@ -490,10 +480,46 @@ def delete_table_and_data(table: str, database: str, boto3_session=None):
     """
 
     if table in list(tables(database=database, limit=None)["Table"]):
-        path = wr.catalog.get_table_location(
+        path = get_table_location(
             database=database, table=table, boto3_session=boto3_session
         )
         wr.s3.delete_objects(path, boto3_session=boto3_session)
+        wr.catalog.delete_table_if_exists(
+            database=database, table=table, boto3_session=boto3_session
+        )
+        return True
+    else:
+        return False
+    
+
+@init_athena_params(allow_boto3_session=True)
+def delete_temp_table(table: str, boto3_session=None):
+    """
+    Deletes a temporary table.
+    
+    Args:
+        table (str): The table name to drop.
+        
+    Returns:
+        True if table exists and is deleted, False if table
+        does not exist
+    """
+    
+    user_id, table_dir = get_user_id_and_table_dir()
+    database = get_database_name_from_userid(user_id)
+    _create_temp_database(database)
+    
+    if table in list(tables(database=database, limit=None)["Table"]):
+        path = get_table_location(
+            database=database, table=table, boto3_session=boto3_session
+        )
+        
+        # Use try in case table was set up in previous session
+        try:
+            wr.s3.delete_objects(path, boto3_session=boto3_session)
+        except wr.exceptions.ServiceApiError:
+            pass
+        
         wr.catalog.delete_table_if_exists(
             database=database, table=table, boto3_session=boto3_session
         )
@@ -600,6 +626,8 @@ def dataframe_to_temp_table(
     user_id, table_dir = get_user_id_and_table_dir()
     db = get_database_name_from_userid(user_id)
     _create_temp_database(db)
+    
+    delete_temp_table(table)
 
     # Include timestamp in path to avoid permissions problems with
     # previous sessions
