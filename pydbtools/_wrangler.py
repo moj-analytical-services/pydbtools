@@ -110,19 +110,14 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
         # that timestamps are read in correctly to pandas using pyarrow.
         # Therefore forcing the default option to be True in case future
         # versions of wrangler change their default behaviour.
-        if (
-            "ctas_approach" in sig.parameters
-            and argmap.get("ctas_approach") is None
-        ):
+        if "ctas_approach" in sig.parameters and argmap.get("ctas_approach") is None:
             argmap["ctas_approach"] = True
 
         # Set database to None or set to keyword temp when not needed
         if database_flag:
             if "ctas_approach" in sig.parameters and argmap["ctas_approach"]:
                 argmap["database"] = temp_db_name
-                _ = _create_temp_database(
-                    temp_db_name, boto3_session=boto3_session
-                )
+                _ = _create_temp_database(temp_db_name, boto3_session=boto3_session)
             elif argmap.get("database", "").lower() == "__temp__":
                 argmap["database"] = temp_db_name
             else:
@@ -139,9 +134,7 @@ def init_athena_params(func=None, *, allow_boto3_session=False):  # noqa: C901
             and "database" in sig.parameters
             and argmap.get("database") is None
         ):
-            argmap["database"] = get_database_name_from_sql(
-                argmap.get("sql", "")
-            )
+            argmap["database"] = get_database_name_from_sql(argmap.get("sql", ""))
 
         # Set pyarrow_additional_kwargs
         if (
@@ -174,9 +167,7 @@ start_query_execution = init_athena_params(ath.start_query_execution)
 stop_query_execution = init_athena_params(ath.stop_query_execution)
 wait_query = init_athena_params(ath.wait_query)
 tables = init_athena_params(wr.catalog.tables)
-create_ctas_table = init_athena_params(
-    ath.create_ctas_table, allow_boto3_session=True
-)
+create_ctas_table = init_athena_params(ath.create_ctas_table, allow_boto3_session=True)
 
 
 @init_athena_params
@@ -192,9 +183,7 @@ def start_query_execution_and_wait(sql, *args, **kwargs):
     # to call the original unwrapped athena fun to ensure the wrapper fun
     # is not called again
     query_execution_id = ath.start_query_execution(sql, *args, **kwargs)
-    return ath.wait_query(
-        query_execution_id, boto3_session=kwargs.get("boto3_session")
-    )
+    return ath.wait_query(query_execution_id, boto3_session=kwargs.get("boto3_session"))
 
 
 def check_sql(sql: str):
@@ -247,9 +236,7 @@ def _create_temp_database(
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
-    q_e_id = ath.start_query_execution(
-        create_db_query, boto3_session=boto3_session
-    )
+    q_e_id = ath.start_query_execution(create_db_query, boto3_session=boto3_session)
     return ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
@@ -490,36 +477,36 @@ def delete_table_and_data(table: str, database: str, boto3_session=None):
         return True
     else:
         return False
-    
+
 
 @init_athena_params(allow_boto3_session=True)
 def delete_temp_table(table: str, boto3_session=None):
     """
     Deletes a temporary table.
-    
+
     Args:
         table (str): The table name to drop.
-        
+
     Returns:
         True if table exists and is deleted, False if table
         does not exist
     """
-    
+
     user_id, table_dir = get_user_id_and_table_dir()
     database = get_database_name_from_userid(user_id)
     _create_temp_database(database)
-    
+
     if table in list(tables(database=database, limit=None)["Table"]):
         path = get_table_location(
             database=database, table=table, boto3_session=boto3_session
         )
-        
+
         # Use try in case table was set up in previous session
         try:
             wr.s3.delete_objects(path, boto3_session=boto3_session)
         except wr.exceptions.ServiceApiError:
             pass
-        
+
         wr.catalog.delete_table_if_exists(
             database=database, table=table, boto3_session=boto3_session
         )
@@ -542,12 +529,8 @@ def delete_database_and_data(database: str, boto3_session=None):
     """
     if database not in (db["Name"] for db in wr.catalog.get_databases()):
         return False
-    for table in wr.catalog.get_tables(
-        database=database, boto3_session=boto3_session
-    ):
-        delete_table_and_data(
-            table["Name"], database, boto3_session=boto3_session
-        )
+    for table in wr.catalog.get_tables(database=database, boto3_session=boto3_session):
+        delete_table_and_data(table["Name"], database, boto3_session=boto3_session)
     wr.catalog.delete_database(database, boto3_session=boto3_session)
     return True
 
@@ -612,9 +595,7 @@ def save_query_to_parquet(sql: str, file_path: str) -> None:
 
 
 @init_athena_params(allow_boto3_session=True)
-def dataframe_to_temp_table(
-    df: pd.DataFrame, table: str, boto3_session=None
-) -> None:
+def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) -> None:
     """
     Creates a temporary table from a dataframe.
 
@@ -626,7 +607,7 @@ def dataframe_to_temp_table(
     user_id, table_dir = get_user_id_and_table_dir()
     db = get_database_name_from_userid(user_id)
     _create_temp_database(db)
-    
+
     delete_temp_table(table)
 
     # Include timestamp in path to avoid permissions problems with
