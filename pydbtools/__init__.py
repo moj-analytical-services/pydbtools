@@ -18,6 +18,7 @@ from ._wrangler import (  # noqa: F401
     read_sql_queries_gen,
     delete_partitions_and_data,
     delete_table_and_data,
+    delete_temp_table,
     delete_database_and_data,
     save_query_to_parquet,
     dataframe_to_temp_table,
@@ -32,4 +33,4 @@ from ._sql_render import get_sql_from_file, render_sql_template  # noqa: F401
 
 from .utils import s3_path_join  # noqa: F401
 
-__version__ = "5.5.1"
+__version__ = "5.5.2"
