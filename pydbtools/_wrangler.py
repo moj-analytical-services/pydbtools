@@ -278,7 +278,10 @@ def create_temp_table(
     # Create named stuff
     user_id, out_path = get_user_id_and_table_dir(boto3_session=boto3_session)
     db_path = os.path.join(out_path, "__athena_temp_db__/")
-    table_path = os.path.join(db_path, table_name)
+    # Include timestamp in path to avoid permissions problems with
+    # previous sessions
+    ts = str(time.time()).replace(".", "")
+    table_path = os.path.join(db_path, ts, table_name)
     temp_db_name = get_database_name_from_userid(user_id)
 
     _ = create_temp_database(temp_db_name, boto3_session)
