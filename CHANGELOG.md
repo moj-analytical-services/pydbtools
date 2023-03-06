@@ -5,11 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v5.5.1 - 2023-07-13
+## v5.5.3 - 2023-03-06
+
+- Fixed issue in create_temp_table
+
+## v5.5.2 - 2023-02-24
+
+- Fixed issue in dataframe_to_temp_table
+
+## v5.5.1 - 2023-02-13
 
 - Fixed issue in `create_table`
 
-## v5.5.0 - 2023-07-07
+## v5.5.0 - 2023-02-07
 
 ## Added
 
