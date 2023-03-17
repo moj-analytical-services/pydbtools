@@ -648,7 +648,7 @@ def dataframe_to_table(
     # Write table
     wr.s3.to_parquet(
         df,
-        path=s3_path_join(location, table + ".parquet"),
+        path=s3_path_join(location, table),
         dataset=True,
         database=database,
         table=table,
