@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "pydbtools"
-version = "5.5.3"
+version = "5.5.4"
 description = "A python package to query data via amazon athena and bring it into a pandas df using aws-wrangler."
 license = "MIT"
 authors = ["Karik Isichei <karik.isichei@digital.justice.gov.uk>"]
@@ -10,8 +10,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11" # wrangler dependency
 boto3 = ">=1.7.4"
-sqlparse = "^0.4.1"
-awswrangler = "^2.12.0"
+sqlparse = "^0.4.4"
+awswrangler = "^2.15.0"
 pyarrow = ">=5.0.0"
 Jinja2 = ">=3.1.0"
 sql-metadata = "^2.3.0"
