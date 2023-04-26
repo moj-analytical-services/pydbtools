@@ -1772,4 +1772,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11" # wrangler dependency
-content-hash = "e3ce55ca4e9f815c08801716529b8ff414fed76eba2f1e46770191dcb7a727c4"
+content-hash = "204efd142e8c99f06b8dd57a020b726a75d04e909f041f4ab21ba86a69658648"
