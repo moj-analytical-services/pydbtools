@@ -1,8 +1,7 @@
 import pytest
-import sqlparse
 
 from pydbtools._wrangler import check_sql
-from pydbtools.utils import replace_temp_database_name_reference, clean_query
+from pydbtools.utils import replace_temp_database_name_reference
 
 sql1 = """
 with x as (SELECT __TEMP__.y.c1, db.tb.c2
@@ -126,3 +125,4 @@ def test_replace_temp_database_name_reference(test_input: str, expected: bool):
     else:
         sql = replace_temp_database_name_reference(test_input, "dbname")
         assert sql == expected
+
