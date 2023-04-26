@@ -125,4 +125,3 @@ def test_replace_temp_database_name_reference(test_input: str, expected: bool):
     else:
         sql = replace_temp_database_name_reference(test_input, "dbname")
         assert sql == expected
-
