@@ -3,6 +3,7 @@ import os
 from moto import mock_s3
 import boto3
 
+
 # Get all SQL files in a dict
 @pytest.fixture(scope="module")
 def sql_dict():
