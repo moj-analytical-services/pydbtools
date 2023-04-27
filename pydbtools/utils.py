@@ -12,12 +12,27 @@ from botocore.credentials import (
 )
 from functools import reduce
 import awswrangler as wr
-
+import warnings
 
 # Set pydbtool params - if you were so inclined to change them
 bucket = os.getenv("ATHENA_QUERY_DUMP_BUCKET", "mojap-athena-query-dump")
+bucket_region = wr.s3.get_bucket_region(bucket)
 temp_database_name_prefix = "mojap_de_temp_"
-aws_default_region = wr.s3.get_bucket_region(bucket)
+aws_default_region = os.getenv(
+    "AWS_ATHENA_QUERY_REGION",
+    os.getenv("AWS_DEFAULT_REGION", os.getenv("AWS_REGION", "eu-west-1")),
+)
+
+if aws_default_region != bucket_region:
+    warnings.warn(
+        f"""
+    Your aws region {aws_default_region} is different from the bucket where
+    the query results are saved: {bucket_region}. You can change this for this session
+    by setting pydb.utils.aws_default_region = "{bucket_region}".
+    You should also set the environment variable:
+    AWS_ATHENA_QUERY_REGION = "{bucket_region}" to ensure the correct region is set.
+    """
+    )
 
 
 def s3_path_join(base: str, *urls: [str]):
