@@ -138,6 +138,14 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
     return "".join(new_query).strip()
 
 
+def clean_user_id(user_id: str) -> str:
+    username = user_id.split(":")[-1]
+    if "@" in username:
+        username = username.split("@")[0]
+    username = username.replace("-", "_")
+    return username
+
+
 def get_user_id_and_table_dir(
     boto3_session=None, force_ec2: bool = False, region_name: str = None
 ) -> Tuple[str, str]:
@@ -149,18 +157,16 @@ def get_user_id_and_table_dir(
 
     sts_client = boto3_session.client("sts")
     sts_resp = sts_client.get_caller_identity()
-    out_path = s3_path_join("s3://" + bucket, sts_resp["UserId"])
+    user_id = clean_user_id(sts_resp["UserId"])
+    out_path = s3_path_join("s3://" + bucket, user_id)
     if out_path[-1] != "/":
         out_path += "/"
 
-    return (sts_resp["UserId"], out_path)
+    return (user_id, out_path)
 
 
-def get_database_name_from_userid(user_id: str) -> str:
-    unique_db_name = "".join(
-        x for x in user_id.split(":")[-1].split("@", 1)[0] if x.isalnum()
-    )
-    unique_db_name = temp_database_name_prefix + unique_db_name
+def get_database_name_from_userid(clean_user_id: str) -> str:
+    unique_db_name = temp_database_name_prefix + clean_user_id
     return unique_db_name
 
 
