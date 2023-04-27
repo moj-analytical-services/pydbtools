@@ -15,7 +15,7 @@ import awswrangler as wr
 
 
 # Set pydbtool params - if you were so inclined to change them
-bucket = "mojap-athena-query-dump"
+bucket = os.getenv("ATHENA_QUERY_DUMP_BUCKET", "mojap-athena-query-dump")
 temp_database_name_prefix = "mojap_de_temp_"
 aws_default_region = wr.s3.get_bucket_region(bucket)
 
