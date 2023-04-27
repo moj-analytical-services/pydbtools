@@ -6,6 +6,7 @@ from urllib.parse import urlparse, urljoin, urlunparse
 import sql_metadata
 import inspect
 import boto3
+from botocore.exceptions import NoCredentialsError
 from botocore.credentials import (
     InstanceMetadataProvider,
     InstanceMetadataFetcher,
@@ -16,7 +17,10 @@ import warnings
 
 # Set pydbtool params - if you were so inclined to change them
 bucket = os.getenv("ATHENA_QUERY_DUMP_BUCKET", "mojap-athena-query-dump")
-bucket_region = wr.s3.get_bucket_region(bucket)
+try:
+    bucket_region = wr.s3.get_bucket_region(bucket)
+except NoCredentialsError:
+    bucket_region = "eu-west-1"
 temp_database_name_prefix = "mojap_de_temp_"
 aws_default_region = os.getenv(
     "AWS_ATHENA_QUERY_REGION",
