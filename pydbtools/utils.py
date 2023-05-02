@@ -6,20 +6,37 @@ from urllib.parse import urlparse, urljoin, urlunparse
 import sql_metadata
 import inspect
 import boto3
+from botocore.exceptions import NoCredentialsError
 from botocore.credentials import (
     InstanceMetadataProvider,
     InstanceMetadataFetcher,
 )
 from functools import reduce
 import awswrangler as wr
-
+import warnings
 
 # Set pydbtool params - if you were so inclined to change them
-bucket = "mojap-athena-query-dump"
+bucket = os.getenv("ATHENA_QUERY_DUMP_BUCKET", "mojap-athena-query-dump")
+try:
+    bucket_region = wr.s3.get_bucket_region(bucket)
+except NoCredentialsError:
+    bucket_region = "eu-west-1"
 temp_database_name_prefix = "mojap_de_temp_"
 aws_default_region = os.getenv(
-    "AWS_DEFAULT_REGION", os.getenv("AWS_REGION", "eu-west-1")
+    "AWS_ATHENA_QUERY_REGION",
+    os.getenv("AWS_DEFAULT_REGION", os.getenv("AWS_REGION", "eu-west-1")),
 )
+
+if aws_default_region != bucket_region:
+    warnings.warn(
+        f"""
+    Your aws region {aws_default_region} is different from the bucket where
+    the query results are saved: {bucket_region}. You can change this for this session
+    by setting pydb.utils.aws_default_region = "{bucket_region}".
+    You should also set the environment variable:
+    AWS_ATHENA_QUERY_REGION = "{bucket_region}" to ensure the correct region is set.
+    """
+    )
 
 
 def s3_path_join(base: str, *urls: [str]):
@@ -138,6 +155,14 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
     return "".join(new_query).strip()
 
 
+def clean_user_id(user_id: str) -> str:
+    username = user_id.split(":")[-1]
+    if "@" in username:
+        username = username.split("@")[0]
+    username = username.replace("-", "_")
+    return username
+
+
 def get_user_id_and_table_dir(
     boto3_session=None, force_ec2: bool = False, region_name: str = None
 ) -> Tuple[str, str]:
@@ -149,18 +174,16 @@ def get_user_id_and_table_dir(
 
     sts_client = boto3_session.client("sts")
     sts_resp = sts_client.get_caller_identity()
-    out_path = s3_path_join("s3://" + bucket, sts_resp["UserId"])
+    user_id = clean_user_id(sts_resp["UserId"])
+    out_path = s3_path_join("s3://" + bucket, user_id)
     if out_path[-1] != "/":
         out_path += "/"
 
-    return (sts_resp["UserId"], out_path)
+    return (user_id, out_path)
 
 
-def get_database_name_from_userid(user_id: str) -> str:
-    unique_db_name = "".join(
-        x for x in user_id.split(":")[-1].split("@", 1)[0] if x.isalnum()
-    )
-    unique_db_name = temp_database_name_prefix + unique_db_name
+def get_database_name_from_userid(clean_user_id: str) -> str:
+    unique_db_name = temp_database_name_prefix + clean_user_id
     return unique_db_name
 
 
