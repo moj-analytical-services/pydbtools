@@ -156,11 +156,13 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
 
 
 def clean_user_id(user_id: str) -> str:
-    username = user_id.split(":")[-1]
-    if "@" in username:
-        username = username.split("@")[0]
-    username = username.replace("-", "_")
-    return username
+    # Are we on the AP?
+    if ":" in user_id:
+        return user_id
+    elif "@" in user_id:
+        user_id = user_id.split("@")[0]
+    user_id = user_id.replace("-", "_")
+    return user_id
 
 
 def get_user_id_and_table_dir(
@@ -183,6 +185,9 @@ def get_user_id_and_table_dir(
 
 
 def get_database_name_from_userid(clean_user_id: str) -> str:
+    # Are we on the AP?
+    if ":" in clean_user_id:
+        clean_user_id = clean_user_id.split(":")[-1].split("-", 1)[-1].replace("-", "_")
     unique_db_name = temp_database_name_prefix + clean_user_id
     return unique_db_name
 

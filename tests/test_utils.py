@@ -32,9 +32,9 @@ def test_pyproject_toml_matches_version():
 @pytest.mark.parametrize(
     "test_input, expected",
     [
-        ("abcde:12345", "12345"),
-        ("abcde:my-name", "my_name"),
-        ("abcde:my-name@digital.justice.gov.uk", "my_name"),
+        ("abcde:12345", "abcde:12345"),
+        ("abcde:my-name", "abcde:my-name"),
+        ("my-name@digital.justice.gov.uk", "my_name"),
     ],
 )
 def test_clean_user_id(test_input, expected):
