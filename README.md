@@ -211,10 +211,6 @@ pydb.create_temp_table()
 print(wr.catalog.delete_database(name=temp_db_name))
 ```
 
-### Setting the region
-
-In order to run queries, Athena needs to output its results into a staging bucket in S3. The aws region passed to awswrangler needs to be the same as the region of that bucket. This is usually the same as that set by the `AWS_DEFAULT_REGION` set within your underlying environment. However, in cases of cross-region working, you can specify the region for Athena to access by setting `AWS_ATHENA_QUERY_REGION` as an environment variable.
-
 # DEPRECATED
 
 ## Functions
