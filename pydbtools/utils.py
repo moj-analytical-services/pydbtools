@@ -157,9 +157,7 @@ def get_user_id_and_table_dir(
 
 
 def get_database_name_from_userid(user_id: str) -> str:
-    unique_db_name = "".join(
-        x for x in user_id.split(":")[-1].split("@", 1)[0] if x.isalnum()
-    )
+    unique_db_name = user_id.split(":")[-1].split("-", 1)[-1].replace("-", "_")
     unique_db_name = temp_database_name_prefix + unique_db_name
     return unique_db_name
 
