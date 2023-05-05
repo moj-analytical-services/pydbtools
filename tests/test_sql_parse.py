@@ -1,7 +1,7 @@
 import pytest
 
 from pydbtools._wrangler import check_sql
-from pydbtools.utils import replace_temp_database_name_reference, clean_query
+from pydbtools.utils import replace_temp_database_name_reference
 
 sql1 = """
 with x as (SELECT __TEMP__.y.c1, db.tb.c2
