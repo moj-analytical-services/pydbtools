@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v5.5.7 - 2023-05-25
+
+- Functions that delete tables only, see `pydbtools.delete_table`.
+
+## v5.5.6 - 2023-05-05
+
+- Reverted to the working version for Analytical Platform
+
+## v5.5.5 - 2023-05-02
+
+- Fixes region issue with new SSO method by getting region from bucket.
+
+## v5.5.4 - 2023-04-26
+
+- Fixes user_id parsing in preparation for SSO, which changes the userid to an email address.
+
 ## v5.5.3 - 2023-03-06
 
 - Fixed issue in create_temp_table
