@@ -176,6 +176,18 @@ pydb.delete_database('my_database')
 pydb.delete_table_and_data(database='__temp__', table='my_temp_table')
 ```
 
+### Delete table but keep data on S3
+
+```python
+import pydbtools as pydb
+
+pydb.delete_table(database='my_database', table='my_table')
+
+# These can be used for temporary databases and tables.
+pydb.delete_table(database='__temp__', table='my_temp_table')
+```
+
+
 For more details see [the notebook on deletions](examples/delete_databases_tables_and_partitions.ipynb).
 
 ## Usage / Examples

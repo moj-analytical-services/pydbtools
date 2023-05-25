@@ -483,6 +483,29 @@ def delete_table_and_data(table: str, database: str, boto3_session=None):
 
 
 @init_athena_params(allow_boto3_session=True)
+def delete_table(table: str, database: str, boto3_session=None):
+    """
+    Deletes a table from an Athena database.
+
+    Args:
+        table (str): The table name to drop.
+        database (str): The database name.
+
+    Returns:
+        True if table exists and is deleted, False if table
+        does not exist
+    """
+
+    if table in list(tables(database=database, limit=None)["Table"]):
+        wr.catalog.delete_table_if_exists(
+            database=database, table=table, boto3_session=boto3_session
+        )
+        return True
+    else:
+        return False
+
+
+@init_athena_params(allow_boto3_session=True)
 def delete_temp_table(table: str, boto3_session=None):
     """
     Deletes a temporary table.
