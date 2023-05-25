@@ -483,7 +483,7 @@ def delete_table_and_data(table: str, database: str, boto3_session=None):
 
 
 @init_athena_params(allow_boto3_session=True)
-def delete_table_if_exists(table: str, database: str, boto3_session=None):
+def delete_table(table: str, database: str, boto3_session=None):
     """
     Deletes a table from an Athena database.
 
