@@ -1,0 +1,8 @@
+site_name: pydbtools
+repo_url: https://github.com/moj-analytical-services/pydbtools
+theme:
+    name: tech_docs_template
+    logo: logos/moj.png
+    favicon: favicons/moj.ico
+plugins:
+    - material/search
