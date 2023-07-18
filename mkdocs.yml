@@ -25,11 +25,6 @@ nav:
     - Home: "README.md"
     - User Guide:
           - Overview: guide/overview.md
-    - API:
-          - Wrangler Extensions: api/wrangler.md
-          - SQL Rendering: api/sql_render.md
-          - Utilities: api/utils.md
-          - Depreciated: api/deprecated.md
     - Examples:
           - examples/create_temporary_tables_from_sql_file.ipynb
           - examples/create_temporary_tables.ipynb
@@ -42,6 +37,11 @@ nav:
           - examples/sql_templating.ipynb
           - examples/testing_new_awswrangler.ipynb
           - examples/updating_db_with_deltas.ipynb
+    - API:
+          - Wrangler Extensions: api/wrangler.md
+          - SQL Rendering: api/sql_render.md
+          - Utilities: api/utils.md
+          - Depreciated: api/deprecated.md
 
 markdown_extensions:
     - mdx_include
