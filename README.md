@@ -16,7 +16,7 @@ pip install "pydbtools @ git+https://github.com/moj-analytical-services/pydbtool
 
 ## Quickstart guide
 
-The [examples directory](examples) contains more detailed notebooks demonstrating the use of this library, many of which are borrowed from the [mojap-aws-tools-demo repo](https://github.com/moj-analytical-services/mojap-aws-tools-demo).
+The [examples directory](docs/examples) contains more detailed notebooks demonstrating the use of this library, many of which are borrowed from the [mojap-aws-tools-demo repo](https://github.com/moj-analytical-services/mojap-aws-tools-demo).
 
 ### Read an SQL Athena query into a pandas dataframe
 
