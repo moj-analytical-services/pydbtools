@@ -19,6 +19,7 @@ plugins:
                   options:
                       show_source: false
     - material/search
+    - mkdocs-jupyter
 
 nav:
     - Home: "README.md"
@@ -29,6 +30,18 @@ nav:
           - SQL Rendering: api/sql_render.md
           - Utilities: api/utils.md
           - Depreciated: api/deprecated.md
+    - Examples:
+          - examples/create_temporary_tables_from_sql_file.ipynb
+          - examples/create_temporary_tables.ipynb
+          - examples/creating_and_maintaining_database_tables_in_athena_from_sql.ipynb
+          - examples/creating_and_maintaining_database_tables_in_athena.ipynb
+          - examples/delete_databases_tables_and_partitions.ipynb
+          - examples/displaying_tables_example.ipynb
+          - examples/mojap_tools_demo.ipynb
+          - examples/simple_database_creation_manipulation.ipynb
+          - examples/sql_templating.ipynb
+          - examples/testing_new_awswrangler.ipynb
+          - examples/updating_db_with_deltas.ipynb
 
 markdown_extensions:
     - mdx_include
