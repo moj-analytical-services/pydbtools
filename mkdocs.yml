@@ -15,9 +15,9 @@ plugins:
           custom_templates: templates
           default_handler: python
           handlers:
-          python:
-              options:
-              show_source: false
+            python:
+                options:
+                    show_source: false
     - material/search
 
 nav:
