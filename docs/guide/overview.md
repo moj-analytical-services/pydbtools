@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This package is a wrapper for [awswrangler](https://aws-data-wrangler.readthedocs.io/en/2.3.0/what.html) that which presets/defines some of the input parameters to the athena module functions to align with our platform setup. See the [awswrangler API reference documentation for Athena](https://aws-data-wrangler.readthedocs.io/en/2.3.0/api.html#amazon-athena) to see what functions you can call from pydbtools.
+This package is a wrapper for [awswrangler](https://aws-sdk-pandas.readthedocs.io/en/stable/) that which presets/defines some of the input parameters to the athena module functions to align with our platform setup. See the [awswrangler API reference documentation for Athena](https://aws-sdk-pandas.readthedocs.io/en/stable/api.html#amazon-athena) to see what functions you can call from pydbtools.
 
 The function parameters that are locked down / altered by `pydbtools` are:
 
@@ -41,7 +41,7 @@ df = pydb.read_sql_query("SELECT * from __temp__.temp_table_1")
 df.head()
 ```
 
-See [the example notebook](examples/create_temporary_tables.ipynb) for a more detailed example.
+See [the example notebook](../examples/create_temporary_tables.ipynb) for a more detailed example.
 
 ### Create databases and tables
 
@@ -70,7 +70,7 @@ pydb.create_table(
 )
 ```
 
-See [the notebook on MoJAP tools](examples/mojap_tools_demo.ipynb) for more details.
+See [the notebook on MoJAP tools](../examples/mojap_tools_demo.ipynb) for more details.
 
 
 ### Run SQL from a string of statements or a file
@@ -105,7 +105,7 @@ with open("queries.sql", "r") as f:
 
 Multiple `SELECT` queries can be returned as a generator of dataframes using `read_sql_queries_gen`.
 
-See [the notebook on creating temporary tables with SQL](examples/create_temporary_tables_from_sql_file.ipynb) and [the notebook on database administration with SQL](examples/creating_and_maintaining_database_tables_in_athena_from_sql.ipynb) for more detailed examples.
+See [the notebook on creating temporary tables with SQL](../examples/create_temporary_tables_from_sql_file.ipynb) and [the notebook on database administration with SQL](../examples/creating_and_maintaining_database_tables_in_athena_from_sql.ipynb) for more detailed examples.
 
 Additionally you can use [Jinja](https://jinja.palletsprojects.com/en/3.0.x/) templating to inject arguments into your SQL.
 
@@ -124,7 +124,7 @@ pydb.read_sql_query(sql)
 """
 ```
 
-See the [notebook on SQL templating](examples/sql_templating.ipynb) for more details.
+See the [notebook on SQL templating](../examples/sql_templating.ipynb) for more details.
 
 ### Delete databases, tables and partitions together with the data on S3
 
@@ -139,7 +139,7 @@ pydb.delete_database('my_database')
 pydb.delete_table_and_data(database='__temp__', table='my_temp_table')
 ```
 
-For more details see [the notebook on deletions](examples/delete_databases_tables_and_partitions.ipynb).
+For more details see [the notebook on deletions](../examples/delete_databases_tables_and_partitions.ipynb).
 
 ## Examples
 
