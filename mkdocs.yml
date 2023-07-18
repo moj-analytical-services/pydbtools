@@ -1,8 +1,47 @@
 site_name: pydbtools
 repo_url: https://github.com/moj-analytical-services/pydbtools
+
 theme:
     name: tech_docs_template
     logo: logos/moj.png
+    features:
+        - navigation.tabs
+        - navigation.tabs.sticky
+        - navigation.indexes
     favicon: favicons/moj.ico
+
 plugins:
+    - mkdocstrings:
+          custom_templates: templates
+          default_handler: python
+          handlers:
+              python:
+                  options:
+                      show_source: false
     - material/search
+
+nav:
+    - Home: "README.md"
+    - User Guide:
+          - Overview: guide/overview.md
+    - API:
+          - Wrangler Extensions: api/wrangler.md
+          - SQL Rendering: api/sql_render.md
+          - Utilities: api/utils.md
+          - Depreciated: api/deprecated.md
+
+markdown_extensions:
+    - mdx_include
+    - pymdownx.highlight:
+          anchor_linenums: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
+    - pymdownx.arithmatex:
+          generic: true
+    - admonition
+
+extra_javascript:
+    - javascripts/mathjax.js
+    - https://polyfill.io/v3/polyfill.min.js?features=es6
+    - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js

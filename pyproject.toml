@@ -20,12 +20,15 @@ arrow-pd-parser = "^1.3.7"
 [tool.poetry.group.dev.dependencies]
 pytest = ">=6.1"
 toml = "^0.10"
+pre-commit = ">=3.3.2"
 
 [tool.poetry.group.docs]
 optional = true
 
 [tool.poetry.group.docs.dependencies]
 mkdocs-tech-docs-template = "0.0.25"
+mdx-include = "^1.4.2"
+mkdocstrings-python = "^1.2.0"
 
 [build-system]
 requires = ["poetry>=0.12"]
