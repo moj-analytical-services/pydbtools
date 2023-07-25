@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v5.5.7 - 2023-07-25
+
+- Expands python requirements to allow 3.11
+
+## v5.5.6 - 2023-05-05
+
+- Reverts back to v5.5.3 due to SSO fixes inadvertently breaking things for AP users
+
+## v5.5.5 - 2023-05-02
+
+- Some further fixes for SSO
+
+## v5.5.4 - 2023-04-26
+
+- Attempt at fixing user ID parsing for SSO roles
+
 ## v5.5.3 - 2023-03-06
 
 - Fixed issue in create_temp_table
