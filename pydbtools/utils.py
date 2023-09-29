@@ -141,7 +141,6 @@ def replace_temp_database_name_reference(sql: str, database_name: str) -> str:
 def get_user_id_and_table_dir(
     boto3_session=None, force_ec2: bool = False, region_name: str = None
 ) -> Tuple[str, str]:
-
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
@@ -157,7 +156,22 @@ def get_user_id_and_table_dir(
 
 
 def get_database_name_from_userid(user_id: str) -> str:
-    unique_db_name = user_id.split(":")[-1].split("-", 1)[-1].replace("-", "_")
+    """
+    Obtain unique database name for temporary database
+    from various forms of user id
+    """
+    unique_db_name = (
+        # Remove chunk before last ":"
+        user_id.split(":")[-1]
+        # Remove chunk after first "@"
+        .split("@")[0]
+        # Replace remaining dashes with underscores
+        .replace("-", "_")
+    )
+    # Only use permitted characters for AWS Athena databases
+    unique_db_name = "".join(
+        c for c in unique_db_name if c.isalpha() or c.isdigit() or c == "_"
+    )
     unique_db_name = temp_database_name_prefix + unique_db_name
     return unique_db_name
 
@@ -214,7 +228,6 @@ def get_boto_client(
     force_ec2: bool = False,
     region_name: str = None,
 ):
-
     region_name = _set_region_name(region_name)
 
     if boto3_session is None:
