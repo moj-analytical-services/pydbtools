@@ -170,7 +170,7 @@ def get_database_name_from_userid(user_id: str) -> str:
     )
     # Only use permitted characters for AWS Athena databases
     unique_db_name = "".join(
-        c for c in unique_db_name if c.isalpha() or c.isdigit() or c == "_"
+        c for c in unique_db_name if c.isalnum() or c == "_"
     )
     unique_db_name = temp_database_name_prefix + unique_db_name
     return unique_db_name
