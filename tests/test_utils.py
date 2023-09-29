@@ -42,5 +42,5 @@ def test_clean_user_id(test_input, expected):
 
     assert (
         pydb.utils.get_database_name_from_userid(test_input)
-        == f"{pydb.utils.temp_database_name_prefix}_{expected}"
+        == f"{pydb.utils.temp_database_name_prefix}{expected}"
     )
