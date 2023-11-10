@@ -5,7 +5,7 @@ version = "5.5.10"
 description = "A python package to query data via amazon athena and bring it into a pandas df using aws-wrangler."
 license = "MIT"
 authors = ["Karik Isichei <karik.isichei@digital.justice.gov.uk>"]
-readme = "docs/README.md"
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
