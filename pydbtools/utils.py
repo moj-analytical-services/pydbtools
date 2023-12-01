@@ -19,8 +19,8 @@ aws_default_region = os.getenv(
 )
 aws_role_regex_rules = [
     (
-        r"@digital.justice.gov.uk$",  # digital justice
-        r"@digital.justice.gov.uk",
+        r"@[a-z.-]+.gov.uk$",  # gov email
+        r"@[a-z.-]+.gov.uk",
     ),
     (
         r"^[0-9]+",  # numeric
@@ -28,7 +28,7 @@ aws_role_regex_rules = [
     ),
     (
         r"alpha_user_",  # alpha user
-        "alpha_user_",
+        None,
     ),
     (
         r"^[a-z0-9]{8}-airflow_",  # airflow
