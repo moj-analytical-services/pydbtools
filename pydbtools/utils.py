@@ -1,18 +1,15 @@
-from typing import Tuple, Optional
+import inspect
 import os
 import re
-import sqlparse
-from urllib.parse import urlparse, urljoin, urlunparse
-import sql_metadata
-import inspect
-import boto3
-from botocore.credentials import (
-    InstanceMetadataProvider,
-    InstanceMetadataFetcher,
-)
 from functools import reduce
-import awswrangler as wr
+from typing import Optional, Tuple
+from urllib.parse import urljoin, urlparse, urlunparse
 
+import awswrangler as wr
+import boto3
+import sql_metadata
+import sqlparse
+from botocore.credentials import InstanceMetadataFetcher, InstanceMetadataProvider
 
 # Set pydbtool params - if you were so inclined to change them
 bucket = "mojap-athena-query-dump"
@@ -20,6 +17,24 @@ temp_database_name_prefix = "mojap_de_temp_"
 aws_default_region = os.getenv(
     "AWS_DEFAULT_REGION", os.getenv("AWS_REGION", "eu-west-1")
 )
+aws_role_regex_rules = [
+    (
+        r"@[a-z.-]+.gov.uk$",  # gov email
+        r"@[a-z.-]+.gov.uk",
+    ),
+    (
+        r"^[0-9]+",  # numeric
+        None,
+    ),
+    (
+        r"alpha_user_",  # alpha user
+        None,
+    ),
+    (
+        r"^[a-z0-9]{8}-airflow_",  # airflow
+        r"[a-z0-9]{8}-",
+    ),
+]
 
 
 def s3_path_join(base: str, *urls: [str]):
@@ -160,18 +175,33 @@ def get_database_name_from_userid(user_id: str) -> str:
     Obtain unique database name for temporary database
     from various forms of user id
     """
-    unique_db_name = (
-        # Remove chunk before last ":"
-        user_id.split(":")[-1]
-        # Remove chunk after first "@"
-        .split("@")[0]
-        # Replace remaining dashes with underscores
-        .replace("-", "_")
-    )
+    # Remove chunk before last ":"
+    unique_db_name = user_id.split(":")[-1].lower()
+
+    # Loop through valid role rules
+    valid_user = False
+    for role_rule, role_sub_rule in aws_role_regex_rules:
+        # Apply substitution rule if provided and a match
+        if re.search(role_rule, unique_db_name) is not None:
+            if role_sub_rule is not None:
+                unique_db_name = re.sub(role_sub_rule, "", unique_db_name)
+
+            # Set valid user to true if matches a rule
+            valid_user = True
+
+            # Break loop once we've found first matching rule
+            break
+
+    # Raise error if user doesn't match one of the set rules
+    if not valid_user:
+        raise ValueError(f"Invalid user: {user_id}")
+
+    # Replace - with _
+    unique_db_name = unique_db_name.replace("-", "_")
+
     # Only use permitted characters for AWS Athena databases
-    unique_db_name = "".join(
-        c for c in unique_db_name if c.isalnum() or c == "_"
-    )
+    unique_db_name = "".join(c for c in unique_db_name if c.isalnum() or c == "_")
+
     unique_db_name = temp_database_name_prefix + unique_db_name
     return unique_db_name
 
