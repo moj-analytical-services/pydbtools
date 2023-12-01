@@ -23,16 +23,16 @@ aws_role_regex_rules = [
         r"@[a-z.-]+.gov.uk",
     ),
     (
-        r"^[0-9]+",  # numeric
-        None,
-    ),
-    (
         r"alpha_user_",  # alpha user
         None,
     ),
     (
         r"^[a-z0-9]{8}-airflow_",  # airflow
         r"[a-z0-9]{8}-",
+    ),
+    (
+        r"^[0-9]+$",  # numeric
+        None,
     ),
 ]
 
