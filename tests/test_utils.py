@@ -39,6 +39,7 @@ def test_pyproject_toml_matches_version():
         ("abcde:my-name@digital.justice.gov.uk", "my_name"),
         ("abcde:my-name@justice.gov.uk", "my_name"),
         ("3f7f9e93-airflow_prod_role_name", "airflow_prod_role_name"),
+        ("3f7f9e9-airflow_prod_role_name", "airflow_prod_role_name"),
     ],
 )
 def test_clean_user_id(test_input, expected):

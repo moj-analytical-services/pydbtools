@@ -31,4 +31,4 @@ from ._wrangler import (  # noqa: F401
 )
 from .utils import s3_path_join  # noqa: F401
 
-__version__ = "5.5.15"
+__version__ = "5.5.16"

@@ -27,8 +27,8 @@ aws_role_regex_rules = [
         None,
     ),
     (
-        r"^[a-z0-9]{8}-airflow_",  # airflow
-        r"[a-z0-9]{8}-",
+        r"^[a-z0-9]{7,8}-airflow_",  # airflow
+        r"[a-z0-9]{7,8}-",
     ),
     (
         r"^[0-9]+$",  # numeric
