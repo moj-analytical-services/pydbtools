@@ -27,6 +27,10 @@ aws_role_regex_rules = [
         None,
     ),
     (
+        r"alpha_app_",  # alpha app
+        None,
+    ),
+    (
         r"^[a-z0-9]{7,8}-airflow_",  # airflow
         r"[a-z0-9]{7,8}-",
     ),

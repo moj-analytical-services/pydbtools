@@ -36,6 +36,8 @@ def test_pyproject_toml_matches_version():
         ("abcde:my-name", None),
         ("d347875:alpha_user_some_user", "alpha_user_some_user"),
         ("d347875:alpha_user_some-user", "alpha_user_some_user"),
+        ("d347875:alpha_app_some_user", "alpha_app_some_user"),
+        ("d347875:alpha_app_some-user", "alpha_app_some_user"),
         ("abcde:my-name@digital.justice.gov.uk", "my_name"),
         ("abcde:my-name@justice.gov.uk", "my_name"),
         ("3f7f9e93-airflow_prod_role_name", "airflow_prod_role_name"),
