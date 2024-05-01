@@ -227,7 +227,7 @@ def _create_temp_database(
 ):
     region_name = _set_region_name(region_name)
     if temp_db_name is None or temp_db_name.lower().strip() == "__temp__":
-        user_id, _ = get_user_id_and_table_dir(
+        user_id, s3_output = get_user_id_and_table_dir(
             boto3_session=boto3_session,
             force_ec2=force_ec2,
             region_name=region_name,
@@ -236,7 +236,12 @@ def _create_temp_database(
 
     create_db_query = f"CREATE DATABASE IF NOT EXISTS {temp_db_name}"
 
-    q_e_id = ath.start_query_execution(create_db_query, boto3_session=boto3_session)
+    q_e_id = ath.start_query_execution(
+        create_db_query,
+        s3_output=s3_output,
+        boto3_session=boto3_session,
+    )
+
     return ath.wait_query(q_e_id, boto3_session=boto3_session)
 
 
