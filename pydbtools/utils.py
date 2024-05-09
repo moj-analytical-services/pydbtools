@@ -15,7 +15,11 @@ from botocore.credentials import InstanceMetadataFetcher, InstanceMetadataProvid
 bucket = "mojap-athena-query-dump"
 temp_database_name_prefix = "mojap_de_temp_"
 aws_default_region = os.getenv(
-    "AWS_DEFAULT_REGION", os.getenv("AWS_REGION", "eu-west-1")
+    "APP_AWS_REGION",
+    os.getenv(
+        "AWS_DEFAULT_REGION",
+        os.getenv("AWS_REGION", "eu-west-1"),
+    ),
 )
 aws_role_regex_rules = [
     (
