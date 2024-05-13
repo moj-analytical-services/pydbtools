@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v5.5.18 - 2024-05-13
+
+- Made s3_output explicit in _create_temp_database
+- Added additional default region environment variable
+which overrides AWS defaults if these cannot be set / changes
+
 ## v5.5.17 - 2024-04-17
 
 - Added aws role rule

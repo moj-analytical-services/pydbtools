@@ -48,5 +48,7 @@ df = pydb.read_sql_query("select * from __temp__.my_table where year = 2022")
 - To query a datetime or timestamp column in Athena you need to specify that your value is a timestamp e.g. `SELECT * FROM db.table WHERE datetime_col > timestamp '2018-12-31 23:59:59'`
 - Note dates and datetimes formatting used above. See more specifics around date and datetimes [here](https://prestodb.io/docs/current/functions/datetime.html)
 - To specify a string in the sql query always use '' not "". Using ""'s means that you are referencing a database, table or col, etc.
+- If you are working in an environment where you cannot change the default AWS region environment
+variables you can set `AWS_ATHENA_QUERY_REGION` which will override these
 
 See changelog for release changes.
