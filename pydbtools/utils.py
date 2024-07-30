@@ -30,7 +30,8 @@ else:
         raise KeyError(
             f"""The AWS region is set to {aws_default_region}
             but environment variable ATHENA_QUERY_DUMP_BUCKET was not set.
-            Either set AWS_ATHENA_QUERY_REGION to eu-west-1 or specify the query dump bucket"""
+            Either set AWS_ATHENA_QUERY_REGION to eu-west-1
+            or specify the query dump bucket"""
         )
 
 aws_role_regex_rules = [
