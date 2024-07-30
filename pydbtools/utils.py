@@ -22,12 +22,15 @@ aws_default_region = os.getenv(
 )
 
 if aws_default_region == "eu-west-1":
-    bucket = os.getenv("ATHENA_QUERY_DUMP_BUCKET","mojap-athena-query-dump")
+    bucket = os.getenv("ATHENA_QUERY_DUMP_BUCKET", "mojap-athena-query-dump")
 else:
     try:
         bucket = os.environ["ATHENA_QUERY_DUMP_BUCKET"]
     except KeyError:
-        raise KeyError(f"The AWS region is set to {aws_default_region} but environment variable ATHENA_QUERY_DUMP_BUCKET was not set.")
+        raise KeyError(
+            f"""The AWS region is set to {aws_default_region}
+            but environment variable ATHENA_QUERY_DUMP_BUCKET was not set."""
+        )
 
 aws_role_regex_rules = [
     (
