@@ -12,7 +12,6 @@ import sqlparse
 from botocore.credentials import InstanceMetadataFetcher, InstanceMetadataProvider
 
 # Set pydbtool params - if you were so inclined to change them
-bucket = "mojap-athena-query-dump"
 temp_database_name_prefix = "mojap_de_temp_"
 aws_default_region = os.getenv(
     "AWS_ATHENA_QUERY_REGION",
@@ -21,6 +20,15 @@ aws_default_region = os.getenv(
         os.getenv("AWS_REGION", "eu-west-1"),
     ),
 )
+
+if aws_default_region == "eu-west-1":
+    bucket = os.getenv("ATHENA_QUERY_DUMP_BUCKET","mojap-athena-query-dump")
+else:
+    try:
+        bucket = os.environ["ATHENA_QUERY_DUMP_BUCKET"]
+    except KeyError:
+        raise KeyError(f"The AWS region is set to {aws_default_region} but environment variable ATHENA_QUERY_DUMP_BUCKET was not set.")
+
 aws_role_regex_rules = [
     (
         r"@[a-z.-]+.gov.uk$",  # gov email
