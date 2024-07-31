@@ -43,12 +43,14 @@ df = pydb.read_sql_query("select * from __temp__.my_table where year = 2022")
 
 ## Notes
 
-- Amazon Athena using a flavour of SQL called presto docs can be found [here](https://prestodb.io/docs/current/)
+- Amazon Athena using a flavour of SQL called trino. Docs can be found [here](https://trino.io/docs/current/language.html)
 - To query a date column in Athena you need to specify that your value is a date e.g. `SELECT * FROM db.table WHERE date_col > date '2018-12-31'`
 - To query a datetime or timestamp column in Athena you need to specify that your value is a timestamp e.g. `SELECT * FROM db.table WHERE datetime_col > timestamp '2018-12-31 23:59:59'`
 - Note dates and datetimes formatting used above. See more specifics around date and datetimes [here](https://prestodb.io/docs/current/functions/datetime.html)
 - To specify a string in the sql query always use '' not "". Using ""'s means that you are referencing a database, table or col, etc.
 - If you are working in an environment where you cannot change the default AWS region environment
-variables you can set `AWS_ATHENA_QUERY_REGION` which will override these
+variables you can set `AWS_ATHENA_QUERY_REGION` which will override these.
+- You can override the bucket where query results are outputted to with the `ATHENA_QUERY_DUMP_BUCKET` environment variable.
+This is mandatory if you set the region to something other than `eu-west-1`.
 
 See changelog for release changes.
