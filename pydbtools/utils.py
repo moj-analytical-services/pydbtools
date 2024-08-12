@@ -59,6 +59,10 @@ aws_role_regex_rules = [
         r"^[0-9]+$",  # numeric
         None,
     ),
+    (
+        r"[A-Za-z0-9]+:GitHubActions", # GitHub action for e2e
+        None,
+    ),
 ]
 
 
