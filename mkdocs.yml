@@ -12,7 +12,6 @@ theme:
 
 plugins:
     - mkdocstrings:
-          custom_templates: templates
           default_handler: python
           handlers:
               python:
@@ -41,7 +40,7 @@ nav:
           - Wrangler Extensions: api/wrangler.md
           - SQL Rendering: api/sql_render.md
           - Utilities: api/utils.md
-          - Depreciated: api/deprecated.md
+          - Deprecated: api/deprecated.md
 
 markdown_extensions:
     - mdx_include
