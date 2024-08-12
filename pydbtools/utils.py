@@ -60,7 +60,7 @@ aws_role_regex_rules = [
         None,
     ),
     (
-        r"[A-Za-z0-9]+:GitHubActions", # GitHub action for e2e
+        r"[A-Za-z0-9]+:GitHubActions",  # GitHub action for e2e
         None,
     ),
 ]
