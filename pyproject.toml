@@ -1,7 +1,7 @@
 [tool]
 [tool.poetry]
 name = "pydbtools"
-version = "5.6.2"
+version = "5.6.3"
 description = "A python package to query data via amazon athena and bring it into a pandas df using aws-wrangler."
 license = "MIT"
 authors = ["Karik Isichei <karik.isichei@digital.justice.gov.uk>"]
@@ -26,7 +26,7 @@ pre-commit = ">=3.3.2"
 optional = true
 
 [tool.poetry.group.docs.dependencies]
-mkdocs-tech-docs-template = "0.0.25"
+mkdocs-tech-docs-template = "0.1.2"
 mdx-include = "^1.4.2"
 mkdocstrings-python = "^1.2.0"
 mkdocs-jupyter = "^0.24.2"
