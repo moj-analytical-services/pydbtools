@@ -295,7 +295,7 @@ def create_temp_table(
 
     # Clear out table every time, making sure other tables aren't being
     # cleared out
-    delete_temp_table(table_name)
+    delete_temp_table(table_name, boto3_session)
 
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
