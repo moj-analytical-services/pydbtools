@@ -295,7 +295,7 @@ def create_temp_table(
 
     # Clear out table every time, making sure other tables aren't being
     # cleared out
-    delete_temp_table(table_name, boto3_session)
+    delete_temp_table(table_name, boto3_session=boto3_session)
 
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
@@ -618,7 +618,7 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
     db = get_database_name_from_userid(user_id)
     _create_temp_database(db, boto3_session=boto3_session)
 
-    delete_temp_table(table)
+    delete_temp_table(table, boto3_session=boto3_session)
 
     # Include timestamp in path to avoid permissions problems with
     # previous sessions
