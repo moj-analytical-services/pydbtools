@@ -291,11 +291,11 @@ def create_temp_table(
     table_path = os.path.join(db_path, ts, table_name)
     temp_db_name = get_database_name_from_userid(user_id)
 
-    _ = create_temp_database(temp_db_name, boto3_session)
+    _ = create_temp_database(temp_db_name, boto3_session=boto3_session)
 
     # Clear out table every time, making sure other tables aren't being
     # cleared out
-    delete_temp_table(table_name)
+    delete_temp_table(table_name, boto3_session=boto3_session)
 
     ctas_query = f"""
     CREATE TABLE {temp_db_name}.{table_name}
@@ -502,9 +502,9 @@ def delete_temp_table(table: str, boto3_session=None):
         does not exist
     """
 
-    user_id, table_dir = get_user_id_and_table_dir()
+    user_id, table_dir = get_user_id_and_table_dir(boto3_session=boto3_session)
     database = get_database_name_from_userid(user_id)
-    _create_temp_database(database)
+    _create_temp_database(database, boto3_session=boto3_session)
 
     if table in list(tables(database=database, limit=None)["Table"]):
         path = get_table_location(
@@ -614,11 +614,11 @@ def dataframe_to_temp_table(df: pd.DataFrame, table: str, boto3_session=None) ->
         table (str): The name of the table in the temporary database
         boto3_session: opeional boto3 sesssion
     """
-    user_id, table_dir = get_user_id_and_table_dir()
+    user_id, table_dir = get_user_id_and_table_dir(boto3_session=boto3_session)
     db = get_database_name_from_userid(user_id)
-    _create_temp_database(db)
+    _create_temp_database(db, boto3_session=boto3_session)
 
-    delete_temp_table(table)
+    delete_temp_table(table, boto3_session=boto3_session)
 
     # Include timestamp in path to avoid permissions problems with
     # previous sessions
