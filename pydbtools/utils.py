@@ -64,8 +64,8 @@ aws_role_regex_rules = [
         None,
     ),
     (
-        r"airflow-",  # Analytical Platform Airflow
-        None
+        r"^[a-z0-9]{7,8}-airflow-",  # Analytical Platform Airflow
+        r"airflow-"
     )
 ]
 
