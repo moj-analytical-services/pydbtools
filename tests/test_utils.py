@@ -44,6 +44,7 @@ def test_pyproject_toml_matches_version():
         ("3f7f9e9-airflow_prod_role_name", "airflow_prod_role_name"),
         ("abcde:airflow_prod_role_name", "airflow_prod_role_name"),
         ("abcde:GitHubActions", "githubactions"),
+        ("3f7f9e93-airflow-development-example-role", "airflow-development-example-role"),
     ],
 )
 def test_clean_user_id(test_input, expected):

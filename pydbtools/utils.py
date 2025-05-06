@@ -63,6 +63,10 @@ aws_role_regex_rules = [
         r"^githubactions$",  # GitHub action for e2e
         None,
     ),
+    (
+        r"airflow-",  # Analytical Platform Airflow
+        None
+    )
 ]
 
 
