@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## v6.0.0 - 2025-05-07
+
+- Extended support for python <= 3.13
+- Dropped support for python <= 3.9
+
 ## v5.6.4 - 2024-09-27
 
 - Explicitly pass boto3_session to helper functions
