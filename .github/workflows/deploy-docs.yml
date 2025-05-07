@@ -1,4 +1,4 @@
-name: gh-deploy
+name: Deploy GitHub pages docs
 on:
   push:
     branches:
@@ -24,4 +24,4 @@ jobs:
       - name: Install the project
         run: uv sync --only-group docs
 
-      - run: mkdocs gh-deploy --force
+      - run: uv run mkdocs gh-deploy --force
