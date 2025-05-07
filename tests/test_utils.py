@@ -26,7 +26,7 @@ def test_pyproject_toml_matches_version():
 
     with open("pyproject.toml") as f:
         proj = toml.load(f)
-    assert pydb.__version__ == proj["tool"]["poetry"]["version"]
+    assert pydb.__version__ == proj["project"]["version"]
 
 
 @pytest.mark.parametrize(
