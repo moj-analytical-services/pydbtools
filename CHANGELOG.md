@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-## v6.0.0 - 2025-05-07
+## v5.7.0 - 2025-05-07
 
 - Extended support for python <= 3.13
 - Dropped support for python <= 3.9
