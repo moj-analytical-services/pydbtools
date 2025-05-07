@@ -36,6 +36,3 @@ docs = [
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
-
-[tool.uv]
-default-groups = []
