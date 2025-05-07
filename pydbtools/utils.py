@@ -48,11 +48,11 @@ aws_role_regex_rules = [
         None,
     ),
     (
-        r"^[a-z0-9]{7,8}-airflow_",  # airflow
+        r"^[a-z0-9]{7,8}-airflow_",  # data engineering airflow
         r"[a-z0-9]{7,8}-",
     ),
     (
-        r"airflow_",  # airflow
+        r"airflow_",  # data engineering airflow
         None,
     ),
     (
@@ -62,6 +62,10 @@ aws_role_regex_rules = [
     (
         r"^githubactions$",  # GitHub action for e2e
         None,
+    ),
+    (
+        r"^[a-z0-9]{7,8}-airflow-",  # Analytical Platform Airflow
+        r"^[^-]+-"
     ),
 ]
 
