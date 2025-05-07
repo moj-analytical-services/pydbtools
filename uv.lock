@@ -1390,7 +1390,7 @@ wheels = [
 
 [[package]]
 name = "pydbtools"
-version = "5.7.0"
+version = "5.8.0"
 source = { editable = "." }
 dependencies = [
     { name = "arrow-pd-parser" },
@@ -1410,6 +1410,7 @@ dev = [
 ]
 docs = [
     { name = "mdx-include" },
+    { name = "mkdocs" },
     { name = "mkdocs-jupyter" },
     { name = "mkdocs-tech-docs-template" },
     { name = "mkdocstrings-python" },
@@ -1434,6 +1435,7 @@ dev = [
 ]
 docs = [
     { name = "mdx-include", specifier = ">=1.4.2,<2.0.0" },
+    { name = "mkdocs", specifier = ">=1.6.1" },
     { name = "mkdocs-jupyter", specifier = ">=0.24.2,<1.0.0" },
     { name = "mkdocs-tech-docs-template", specifier = "==0.1.2" },
     { name = "mkdocstrings-python", specifier = ">=1.2.0,<2.0.0" },

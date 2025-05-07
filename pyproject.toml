@@ -31,6 +31,7 @@ docs = [
     "mdx-include<2.0.0,>=1.4.2",
     "mkdocstrings-python<2.0.0,>=1.2.0",
     "mkdocs-jupyter<1.0.0,>=0.24.2",
+    "mkdocs>=1.6.1",
 ]
 
 [build-system]
