@@ -1,6 +1,6 @@
 [project]
 name = "pydbtools"
-version = "5.7.0"
+version = "5.7.1"
 description = "A python package to query data via amazon athena and bring it into a pandas df using aws-wrangler."
 readme = "README.md"
 license = {text = "MIT"}

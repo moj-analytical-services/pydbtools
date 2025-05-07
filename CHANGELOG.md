@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## v5.7.1 - 2025-05-07
+
+- update github publish workflow to use `uv`
+
 ## v5.7.0 - 2025-05-07
 
 - Update repo to use `uv` for project management

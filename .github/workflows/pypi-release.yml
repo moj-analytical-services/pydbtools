@@ -18,23 +18,5 @@ jobs:
       - name: Install the project
         run: uv build --no-sources
 
-      - uses: actions/upload-artifact@v4
-        with:
-          path: ./dist
-
-  pypi-publish:
-    needs: ['build']
-    environment: 'release'
-
-    name: upload release to PyPI
-    runs-on: ubuntu-latest
-    permissions:
-      # IMPORTANT: this permission is mandatory for trusted publishing
-      id-token: write
-    steps:
-      - uses: actions/download-artifact@v4
-
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: artifact/
+      - name: Publish
+        run: uv publish -t ${{ secrets.PYPI_API_TOKEN }}
