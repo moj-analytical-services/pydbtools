@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v5.7.0 - 2025-05-07
 
+- Update repo to use `uv` for project management
 - Extended support for python <= 3.13
 - Dropped support for python <= 3.9
 
