@@ -64,8 +64,8 @@ aws_role_regex_rules = [
         None,
     ),
     (
-        r"^[a-z0-9]{7,8}-airflow-",  # Analytical Platform Airflow
-        r"^[^-]+-"
+        r"^airflow-",  # Analytical Platform Airflow
+        None
     ),
 ]
 
@@ -218,10 +218,8 @@ def get_database_name_from_userid(user_id: str) -> str:
         if re.search(role_rule, unique_db_name) is not None:
             if role_sub_rule is not None:
                 unique_db_name = re.sub(role_sub_rule, "", unique_db_name)
-
             # Set valid user to true if matches a rule
             valid_user = True
-
             # Break loop once we've found first matching rule
             break
 
